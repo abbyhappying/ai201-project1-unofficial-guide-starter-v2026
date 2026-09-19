@@ -11,15 +11,52 @@
 > **Paste everything as text.** No screenshots, no video. A typed table gets
 > full credit; a picture of the same table gets none.
 >
-> Delete these instruction blocks as you replace them. The `<!-- -->` comments
-> are notes to you and don't show up when the page renders — you can leave them
-> or remove them.
+
 
 ---
 
 # Unit 1
 
 ## What This Does
+
+I picked the corpus of city_guides and ask "where shall I visit".
+
+python app.py --corpus advice_threads chunks -n 2 Output:
+ 26 chunks total. Showing 2, spread across the corpus.
+
+======================================================================
+Chunk 1  |  source: thread_bike_commute.txt#0  |  produced by: chunker.py::fallback_split
+======================================================================
+THREAD: Is a bike worth it for a 20 minute walk commute?
+
+--- reply 1 (14 votes) ---
+Yeah. Cuts an 18 minute walk to about 6. The thing nobody mentions is storage — covered bike parking exists at three buildings and is full by 9am at all three.
+
+--- reply 2 (9 votes) ---
+Counterpoint, I sold mine. Between November and March the paths are either icy or salted and salt destroysa drivetrain in one season.
+
+--- reply 3 (22 votes) ---
+Both true. I keep a cheap bike for September to November and walk the rest of the year. Total cost was about $120 for the bike and I don't care what happens to it.
+
+--- reply 4 (5 votes) ---
+If you do get one, the campus does free registration and it's the only reason I got mine back after it wastaken.
+
+======================================================================
+Chunk 2  |  source: thread_meal_plan_tier.txt#0  |  produced by: chunker.py::fallback_split
+======================================================================
+THREAD: Which meal plan tier is right?
+
+--- reply 1 (24 votes) ---
+Depends entirely on whether your building has a kitchen. Fenwick has kitchenettes, so people there go downa tier and cook two or three nights. Everywhere else, get the middle tier.
+
+--- reply 2 (19 votes) ---
+The highest tier only makes sense if you eat three meals a day in the halls every single day, which basically nobody does past October.
+
+--- reply 3 (11 votes) ---
+Remember you can only change it once and only in the first ten days. I waited and got stuck on a plan I didn't use.
+
+--- reply 4 (7 votes) ---
+Declining balance rolls within the semester but not between them. Spend it in December or lose it.
 
 <!-- Three or four sentences. Which corpus you picked, and the kinds of
      questions your system answers. Write it for someone who has never seen
