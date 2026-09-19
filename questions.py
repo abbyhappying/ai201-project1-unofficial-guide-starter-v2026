@@ -21,13 +21,50 @@ Swap them for your own if you like. Keep five of them either way: criterion 3
 names a target of "4 of 5", and four of three is not a thing.
 """
 
+# Corpus: city_guides — nine town guides plus five cross-cutting guides
+# (eating, walking, seasons, regional transport, accessibility).
+#
+# Criterion 1 in criteria.md targets 4 of 5 and says one question is about a
+# topic only two documents mention. That question is the last one below: the
+# Elder Ness tidal flooding appears in guide_elder_ness.md and guide_walking.md
+# and nowhere else. The other four each sit in three or more documents, because
+# a fact stated in both a town guide and a cross-cutting guide gives retrieval
+# more than one chunk that can carry the answer.
 QUESTIONS = [
-    # {"question": "...", "expects": "..."},
-    {"question": "", "expects": ""},
-    {"question": "", "expects": ""},
-    {"question": "", "expects": ""},
-    {"question": "", "expects": ""},
-    {"question": "", "expects": ""},
+    # guide_eating.md, guide_marchwood.md, guide_kestrelford.md,
+    # guide_brightwater.md — the region-wide 9pm rule and its one exception.
+    {
+        "question": "If I want to eat dinner at 9:30pm, which town in the "
+                    "region can I actually get a hot meal in?",
+        "expects": "Marchwood",
+    },
+    # guide_halden_bay.md, guide_regional_transport.md, guide_seasons.md —
+    # all three give the same arrival time.
+    {
+        "question": "How early do I need to arrive in Halden Bay to find "
+                    "parking on a summer weekend?",
+        "expects": "10am",
+    },
+    # guide_walking.md, guide_kestrelford.md, guide_regional_transport.md —
+    # all three call the trackbed the best walking for the effort.
+    {
+        "question": "Which walking route in the region gives the most for the "
+                    "least effort, and how long is it?",
+        "expects": "six miles",
+    },
+    # guide_accessibility.md, guide_thornby_wells.md, guide_walking.md — named
+    # the easiest town in all three.
+    {
+        "question": "Which town in the region is easiest to get around with "
+                    "limited mobility?",
+        "expects": "Thornby Wells",
+    },
+    # HARD (two documents only): guide_elder_ness.md and guide_walking.md.
+    {
+        "question": "How often does the access road to Elder Ness flood, and "
+                    "for how long each time?",
+        "expects": "six times a year",
+    },
 ]
 
 # Questions from a different world entirely. Your gate should refuse all five.
