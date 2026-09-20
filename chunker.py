@@ -22,10 +22,18 @@ to it, write down what you saw, and move on. That's a real observation about
 your pipeline, not giving up.
 """
 
+import re
 from dataclasses import dataclass
 
 import config
 from ingest import Document
+
+# Ceiling for merging paragraphs in the unstructured branch (campus_life).
+#
+# Measured against that corpus: 183 bare paragraphs is too granular — median
+# body is 112 characters and the shortest is 36 — while a ceiling of 600 or
+# more swallows every document whole and reproduces the baseline's 88 chunks.
+MERGE_TARGET = 450
 
 
 @dataclass
@@ -80,24 +88,134 @@ def fallback_split(
     return chunks
 
 
+
 def split_documents(documents: list[Document]) -> list[Chunk]:
     """
-    Split documents into chunks. ⚠️ REPLACE THE BODY OF THIS IN MILESTONE 3.
+    Split documents on their own structure rather than on a character count.
 
-    Right now it just calls the fallback. That is the plain, generic behaviour
-    the brief is talking about.
+    Which structure depends on what the document has, because the two corpora
+    are shaped differently and one function serves whichever `config.CORPUS`
+    points at:
 
-    When you write your own strategy, set `produced_by` to
-    "chunker.py::split_documents" so your README's Sample Chunks section names
-    the right function. `app.py chunks` prints that string for you.
+      - Markdown with '##' headings (city_guides) is cut at those headings.
+        All 14 guides share near-identical section names — "Getting there",
+        "Getting around", "Where to stay" — so the '#' title is prepended to
+        every chunk. Without it, fourteen "Getting there" sections embed
+        almost identically and retrieval for a named town is a coin flip.
 
-    Things worth thinking about before you write any code:
-      - Are your documents short posts or long guides?
-      - Is the useful information in one sentence, or spread over a paragraph?
-      - Would splitting on paragraph breaks keep more thoughts intact than
-        splitting on a character count?
+      - Everything else (campus_life) is cut at paragraph breaks, with short
+        paragraphs merged up to MERGE_TARGET and the title prepended. The
+        documents are short, median 324 characters, but they bundle unrelated
+        facts: housing_old_brewhouse.txt covers build history, heating,
+        laundry prices and acoustics in one piece.
+
+    CHUNK_SIZE is a backstop here, not a tuning parameter: it only fires if a
+    natural section is somehow longer than it, which on these corpora never
+    happens. CHUNK_OVERLAP goes unused — chunks end at structural boundaries,
+    so there is no severed sentence for an overlap to repair.
     """
-    return fallback_split(documents)
+    heading_re = re.compile(r"^##+\s+(.*)$", re.M)
+    chunks: list[Chunk] = []
+
+    for doc in documents:
+        # The title is the first line, minus any leading '#'.
+        title, _, body = doc.text.partition("\n")
+        title = title.strip().lstrip("#").strip()
+
+        # The city_guides files are hard-wrapped at about 80 columns, so a
+        # single newline is a display artefact rather than a boundary — one
+        # sentence in guide_accessibility.md spans four lines. Rejoin those,
+        # drop Markdown emphasis, and keep blank lines as paragraph breaks.
+        blocks = [
+            " ".join(line.strip() for line in block.split("\n") if line.strip())
+            for block in body.split("\n\n")
+        ]
+        body = "\n\n".join(b.replace("**", "") for b in blocks if b)
+
+        pieces: list[str] = []
+
+        if heading_re.search(body):
+            # ── city_guides: cut at '##' headings ────────────────────────────
+            # Text before the first heading (the standing intro in
+            # guide_accessibility.md, for instance) is kept, not dropped.
+            heading: str | None = None
+            position = 0
+            sections: list[tuple[str | None, str]] = []
+
+            for match in heading_re.finditer(body):
+                segment = body[position : match.start()].strip()
+                if segment:
+                    sections.append((heading, segment))
+                heading = match.group(1).strip()
+                position = match.end()
+
+            tail = body[position:].strip()
+            if tail:
+                sections.append((heading, tail))
+
+            for heading, section in sections:
+                label = f"{title} — {heading}" if heading else title
+                pieces.append(f"{label}\n\n{section}")
+
+        else:
+            # ── campus_life: cut at paragraph breaks, merging short ones ─────
+            # The ceiling counts the title prefix too, so it applies to the
+            # finished chunk. It is a stopping rule, not a target: nothing is
+            # padded, and a paragraph that would overshoot starts a new chunk.
+            reserved = len(title) + 2
+            current = ""
+
+            for para in (p.strip() for p in body.split("\n\n")):
+                if not para:
+                    continue
+                if current and reserved + len(current) + len(para) + 2 > MERGE_TARGET:
+                    pieces.append(f"{title}\n\n{current}")
+                    current = para
+                else:
+                    current = f"{current}\n\n{para}" if current else para
+
+            if current:
+                pieces.append(f"{title}\n\n{current}")
+
+        # A document with nothing under its title still has to be indexed.
+        if not pieces and title:
+            pieces = [title]
+
+        index = 0
+        for piece in pieces:
+            # The backstop. Cuts at sentence ends so an over-long document
+            # dropped into corpora/ degrades into sentence-aligned pieces
+            # rather than one oversized chunk.
+            parts = [piece]
+            if len(piece) > config.CHUNK_SIZE:
+                parts, current = [], ""
+                for sentence in re.split(r"(?<=[.!?])\s+", piece):
+                    if current and len(current) + len(sentence) + 1 > config.CHUNK_SIZE:
+                        parts.append(current)
+                        current = sentence
+                    else:
+                        current = f"{current} {sentence}" if current else sentence
+                    while len(current) > config.CHUNK_SIZE:  # one huge sentence
+                        parts.append(current[: config.CHUNK_SIZE])
+                        current = current[config.CHUNK_SIZE :]
+                if current:
+                    parts.append(current)
+
+            for part in parts:
+                part = part.strip()
+                if not part:
+                    continue
+                chunks.append(
+                    Chunk(
+                        text=part,
+                        source=doc.source,
+                        index=index,
+                        produced_by="chunker.py::split_documents",
+                    )
+                )
+                index += 1
+
+    return chunks
 
 
 def describe(chunks: list[Chunk]) -> str:

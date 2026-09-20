@@ -8,7 +8,7 @@
 > How the starter works, and every command you'll need, is in `RUNNING.md`.
 > Leave that file alone.
 >
-> **Paste everything as text.** No screenshots, no video. A typed table gets
+> **Paste everything as text.**  A typed table gets
 > full credit; a picture of the same table gets none.
 >
 
@@ -67,53 +67,61 @@ Declining balance rolls within the semester but not between them. Spend it in De
 ## Chunking Strategy
 
 **Chunk size:**
+
+I split on the document's natural structure rather than fixed character counts. For city_guides, that means splitting on ## headings and prepending the # title to each chunk, because all 14 guides share near-identical section names and without the town name the embeddings are indistinguishable. For campus_life, I split on paragraph breaks and merge small paragraphs up to ~450 characters, prepending the title — producing ~110–120 chunks rather than the baseline's 88. CHUNK_SIZE acts as a backstop, not a tuning parameter.
+
 **Overlap:**
-
-<!-- What about YOUR documents made you pick these numbers? Short posts and
-     long sectioned guides don't want the same chunking, and "800 seemed
-     reasonable" earns nothing. Point at something you noticed when you read
-     the documents in Milestone 1.
-
-     If you changed your mind partway through, say so and say why. That's worth
-     more than pretending you got it right first time.
-
-     Milestone 3. -->
+0 for both corpora. Because chunks end at structural boundaries (headings for city_guides, paragraph breaks for campus_life), there is no severed context to repair.
 
 ## Sample Chunks
 
-<!-- Five chunks, pasted as text. Label each one and name the file it came from
-     AND the function that produced it — the grader checks your code against
-     what you claim here.
-
-     `python app.py chunks -n 5` prints all three for you. Copy them straight
-     across.
-
-     Milestone 3. -->
 
 **Chunk 1** — source: `` — produced by: ``
 
-```
-```
+======================================================================
+Chunk 1  |  source: guide_accessibility.md#0  |  produced by: chunker.py::split_documents
+======================================================================
+Getting around the region with limited mobility
+
+An honest assessment rather than a promotional one. Some of these places are difficult and it is betterto know in advance.
+
 
 **Chunk 2** — source: `` — produced by: ``
 
-```
-```
+======================================================================
+Chunk 2  |  source: guide_corry_vale.md#5  |  produced by: chunker.py::split_documents
+======================================================================
+Corry Vale — Where to stay
+
+Perhaps thirty beds in the entire valley, spread across two pubs and a handful of farmhouse rooms. In summer these are booked months ahead. Camping is permitted on two marked fields and nowhere else.
 
 **Chunk 3** — source: `` — produced by: ``
 
-```
-```
+======================================================================
+Chunk 3  |  source: guide_givens_mill.md#2  |  produced by: chunker.py::split_documents
+======================================================================
+Givens Mill — Getting around
+
+Everything is on one street along the river. The mill is at one end and the church at the other, eight minutes apart. The riverside path continues in both directions for as far as you want to walk.
 
 **Chunk 4** — source: `` — produced by: ``
 
-```
-```
+======================================================================
+Chunk 4  |  source: guide_kestrelford.md#4  |  produced by: chunker.py::split_documents
+======================================================================
+Kestrelford — What to see
+
+The market square on a Saturday morning is the main event and has run continuously since the 1400s. Theparish church has a 13th-century tower you can climb for £2. The old trackbed walk runs six miles to the next village along an easy gradient and is the best half-day here.
+
 
 **Chunk 5** — source: `` — produced by: ``
 
-```
-```
+======================================================================
+Chunk 5  |  source: guide_pellew_sands.md#6  |  produced by: chunker.py::split_documents
+======================================================================
+Pellew Sands — When to go
+
+June and September for the beach without the crowds. July and August are busy and the town is at its most itself, for better and worse. Winter is bleak, largely closed, and has a following among people who like that sort of thing.
 
 ## Sample Answer
 
