@@ -366,51 +366,28 @@ Wrote results\run_2026-09-26_1033_before.md
 
 ## Verdicts
 
-<!-- MET or MISSED for each of the five, against the target you wrote last
-     unit — not a new one. Plus a sentence on how you decided. That sentence
-     matters most where it was close.
-
-     If your target said 4 of 5 and your runs came out 4, 3, 4, that's a MISS.
-     The target has to hold, not show up occasionally.
-
-     Milestone 2. -->
 
 | # | Criterion | Verdict | How I decided |
-|---|---|---|---|
-| 1 |  |  |  |
-| 2 |  |  |  |
-| 3 |  |  |  |
-| 4 |  |  |  |
-| 5 |  |  |  |
+| 1 | 	Retrieved chunks contain the answer (target: 4 of 5) |	MET |	All 5 in-scope questions returned an answer-bearing chunk in all 3 runs; best distances 0.276–0.564, every one under the 0.6 gate. |
+| 2 | 	Every answer names a source (target: 5 of 5) |MET |	Citation is a deterministic formatting step — source metadata is attached at index time and carried through retrieval, so all 5 answers cited a source in all 3 runs. |
+| 3 | Relevance gate stops out-of-corpus questions (target: 4 of 5) |MET |	All 5 out-of-scope questions were refused in all 3 runs; best distances 0.808–0.982, every one well above the 0.6 cutoff. (Target held; the description under this criterion in criteria.md has stale numbers and needs a revision underneath, not an edit.) |
+| 4 | Chunks hold together — self-contained and ≥200 chars (target: 4 of 5) |MET |All sampled chunks in every run started and ended at natural boundaries with no severed sentences, and all cleared the 200-character floor. |
+| 5 | Stability across 3 runs — same core chunks + semantically equivalent answers (target: 4 of 5)	 |MET |Every distance was byte-identical across all 3 runs (e.g. 0.564/0.564/0.564) and answers were semantically equivalent, confirming the pipeline is deterministic. |
 
 ## Diagnoses
 
-<!-- For each miss: which stage caused it, and how. The stage alone isn't
-     enough — you need the mechanism.
+I missed nothing, all 5 criteria met in all 3 runs.
 
-     Not a diagnosis: "Question 3 didn't work."
-     A diagnosis:     "Question 3 asks about laundry costs. The answer is in
-                       one sentence that got split across two chunks, so
-                       neither chunk on its own contains it."
-
-     The five stages: loading → chunking → embedding → retrieval → generation.
-
-     Look for a pattern. If three misses all ask about numbers, that's one
-     problem, not three.
-
-     Missed nothing? Say so, then say honestly whether your targets were set
-     low, and which one you'd tighten and to what.
-
-     Milestone 3. -->
 
 ## The Improvement
 
 **What I changed:**
+Criterion 3 of gate stops out-of-corpus 4 of 5 tries changed to 5 of 5 tries.
 
 **Why I picked it:**
+The target might be too low since the original 4/5 was justified by a claimed thin 0.10 gap with an overlap zone,but the measured data shows a 0.24 clean gap — in-scope tops out at 0.564, out-of-scope bottoms out at 0.808, with the 0.6 cutoff sitting well inside the empty middle. With that separation, there's no borderline case,I should set 5 of 5 out-of-scope questions refused. This is a broken measurement, I'd prefer tighten from 4 of 5 to 5 of 5.
 
-<!-- Connect it to a specific diagnosis above in one sentence. If you can't,
-     you picked a fix because it sounded impressive. -->
+
 
 ### Run Log — After
 
