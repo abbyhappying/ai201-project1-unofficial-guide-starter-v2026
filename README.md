@@ -301,9 +301,6 @@ What I changed: Claude initially suggested moving the cutoff to 0.59 to "put it 
 
 # Unit 2
 
-<!-- These sections get ADDED to what's already above. Don't delete or rewrite
-     unit 1 — the point is that someone can see what you said before you knew
-     how it went. -->
 
 ## Run Log — Before
 
@@ -319,15 +316,53 @@ What I changed: Claude initially suggested moving the cutoff to 0.59 to "put it 
 
 | Criterion | Target | Run 1 | Run 2 | Run 3 | Verdict |
 |---|---|---|---|---|---|
-| 1. Retrieved chunk contains the answer | 4 of 5 |  |  |  |  |
-| 2. Every answer names a source | 5 of 5 |  |  |  |  |
-| 3. Gate stops out-of-corpus questions | 4 of 5 |  |  |  |  |
-| 4. | | | | | |
-| 5. | | | | | |
+| 1. Retrieved chunk contains the answer | 4 of 5 | 5/5 |5/5 | 5/5| MET|
+| 2. Every answer names a source | 5 of 5 | 5/5 |5/5 | 5/5| MET|
+| 3. Gate stops out-of-corpus questions | 4 of 5 | 5/5 |5/5 | 5/5| MET|
+| 4. Chunks hold together (self-contained, ≥200 chars) | 4 of 5 | 5/5 |5/5 | 5/5| MET|
+| 5. Stability across 3 runs (same core chunks + equivalent answers)|| 4 of 5 | 5/5 |5/5 | 5/5| MET|
 
-<!-- Underneath, paste the REAL output for each criterion from one of your
-     runs — the actual text your system produced, not a description of it.
-     Name the file and function that produced it. -->
+
+
+
+
+If I want to eat dinner at 9:30pm, which town in the region can I actually get a hot meal in?
+  run 1: pass  (best distance 0.564)
+  run 2: pass  (best distance 0.564)
+  run 3: pass  (best distance 0.564)
+
+How early do I need to arrive in Halden Bay to find parking on a summer weekend?
+  run 1: pass  (best distance 0.293)
+  run 2: pass  (best distance 0.293)
+  run 3: pass  (best distance 0.293)
+
+Which walking route in the region gives the most for the least effort, and how long is it?
+  run 1: pass  (best distance 0.435)
+  run 2: pass  (best distance 0.435)
+  run 3: pass  (best distance 0.435)
+
+Which town in the region is easiest to get around with limited mobility?
+  run 1: pass  (best distance 0.463)
+  run 2: pass  (best distance 0.463)
+  run 3: pass  (best distance 0.463)
+
+How often does the access road to Elder Ness flood, and for how long each time?
+  run 1: pass  (best distance 0.276)
+  run 2: pass  (best distance 0.276)
+  run 3: pass  (best distance 0.276)
+
+Out-of-scope questions (the gate should refuse these):
+  refused  (best distance 0.808)  What is the capital of Mongolia?
+  refused  (best distance 0.881)  How do I change the oil in a diesel engine?
+  refused  (best distance 0.982)  Who won the 1994 World Cup?
+  refused  (best distance 0.835)  What is the recommended dosage of ibuprofen for a headache?
+  refused  (best distance 0.859)  How do I write a for loop in Rust?
+  -> gate refused 5 of 5
+
+Wrote results\run_2026-09-26_1033_before.md
+15 model calls this session, 9849 tokens (9063 in, 786 out)
+
+
 
 ## Verdicts
 
