@@ -15,9 +15,14 @@ rest of the project if they were wrong:
    `sentence-transformers`. It is the same model — `all-MiniLM-L6-v2`, 384
    dimensions — but it arrives as an ONNX build from Chroma's own CDN, so the
    install needs neither PyTorch nor a reachable Hugging Face. See `_embedder`.
+
+4. When `config.HYBRID` is on, `search` runs a keyword search beside the vector
+   search and merges the two rankings — see `_fuse`. `Result.distance` keeps
+   meaning cosine distance either way, because the relevance gate reads it.
 """
 
 import os
+import re
 import shutil
 from dataclasses import dataclass
 
@@ -150,6 +155,12 @@ def build_index(
     name = config.collection_name(corpus, variant)
     client = _client()
 
+    # These chunks are about to be replaced, so any keyword index built from
+    # the old ones is now wrong. Without this line, re-chunking and re-indexing
+    # would leave the keyword half of `search` answering from the chunks you
+    # just deleted, for as long as the process stayed alive.
+    _bm25_cache.pop(name, None)
+
     try:
         client.delete_collection(name)
     except Exception:
@@ -178,6 +189,92 @@ def build_index(
     return len(chunks)
 
 
+# How much a chunk's position in one ranking is worth when the two rankings
+# are merged: 1 / (RRF_K + rank). The standard 60 is deliberately flat, so a
+# chunk both searches liked beats a chunk only one of them liked. Lower it to
+# make being *first* in one ranking count for more.
+RRF_K = 60
+
+# One BM25 index per collection, built on first use. Dropped in `build_index`
+# and `reset`, because both change the chunks underneath it.
+_bm25_cache: dict[str, tuple] = {}
+
+
+def _tokens(text: str) -> list[str]:
+    """Words and numbers, lowercased.
+
+    No stemming and no stopword list: BM25 weights a word by how rare it is,
+    so "the" is already worth almost nothing without a list to say so.
+    """
+    return re.findall(r"\w+", text.lower())
+
+
+def _bm25_index(collection, name: str):
+    """A keyword index over the chunks Chroma is already holding.
+
+    The text comes back out of the same collection the vectors are in, so
+    there is no second index file to build, ship or keep in step — and no way
+    for the two searches to end up looking at different chunks.
+    """
+    if name not in _bm25_cache:
+        from rank_bm25 import BM25Okapi
+
+        stored = collection.get(include=["documents", "metadatas"])
+        labels = [
+            f"{meta.get('source', 'unknown')}#{meta.get('index', 0)}"
+            for meta in stored["metadatas"]
+        ]
+        index = BM25Okapi([_tokens(document) for document in stored["documents"]])
+        _bm25_cache[name] = (index, labels)
+
+    return _bm25_cache[name]
+
+
+def _fuse(
+    question: str,
+    results: list[Result],
+    collection,
+    name: str,
+    top_k: int,
+) -> list[Result]:
+    """
+    Merge the vector ranking with a keyword ranking and keep the best `top_k`.
+
+    Reciprocal Rank Fusion: a chunk scores 1 / (RRF_K + rank) in each ranking
+    and the two are added. Note that this reads only the ORDER each search put
+    things in, never the numbers. That is the point — a cosine distance runs 0
+    to 2 and a BM25 score has no ceiling at all, so adding them directly is
+    meaningless, and rescaling them to fit would make the best hit of every
+    question look equally good, including the questions with no answer in the
+    corpus at all.
+    """
+    bm25, labels = _bm25_index(collection, name)
+    scores = bm25.get_scores(_tokens(question))
+
+    by_score = sorted(range(len(labels)), key=lambda i: -scores[i])
+    keyword_rank = {labels[i]: rank for rank, i in enumerate(by_score, 1)}
+    vector_rank = {result.label: rank for rank, result in enumerate(results, 1)}
+    unranked = len(labels) + 1      # for anything one of the two never saw
+
+    def fused(result: Result) -> float:
+        return 1 / (RRF_K + vector_rank.get(result.label, unranked)) + 1 / (
+            RRF_K + keyword_rank.get(result.label, unranked)
+        )
+
+    top = sorted(results, key=fused, reverse=True)[:top_k]
+
+    # gate.py refuses when the smallest distance among these is over
+    # THRESHOLD, and that cutoff was calibrated against vector search alone.
+    # Merging re-orders, so the nearest chunk can land outside top_k — and the
+    # gate would start refusing questions it used to answer, for no reason it
+    # could show you. Putting it back means the gate sees the same number it
+    # saw before. Throwing away the closest chunk was never a good idea anyway.
+    if results and top and results[0] not in top:
+        top[-1] = results[0]
+
+    return top
+
+
 def search(
     question: str,
     top_k: int | None = None,
@@ -187,7 +284,10 @@ def search(
     """
     Retrieve the chunks closest in meaning to a question.
 
-    Returns them nearest-first, each with its distance.
+    Returns them nearest-first, each with its distance — unless
+    `config.HYBRID` is on, in which case a keyword search has had a say in the
+    order too and the distances no longer only ever go up. They are still real
+    cosine distances; see `_fuse`.
     """
     top_k = top_k or config.TOP_K
     name = config.collection_name(corpus, variant)
@@ -199,9 +299,15 @@ def search(
             f"No index called '{name}'. Run `python app.py index` first."
         ) from exc
 
+    # Merging two rankings is easiest when both cover the same chunks, so the
+    # hybrid path asks for all of them. At this corpus size — 94 chunks — that
+    # costs nothing and removes a knob nobody would know how to tune. If you
+    # ever point this at thousands of chunks, ask for a few hundred here
+    # instead: the merge itself doesn't change.
+    count = collection.count()
     raw = collection.query(
         query_embeddings=embed([question]),
-        n_results=min(top_k, collection.count()),
+        n_results=count if config.HYBRID else min(top_k, count),
     )
 
     results: list[Result] = []
@@ -217,7 +323,11 @@ def search(
                 produced_by=str(meta.get("produced_by", "unknown")),
             )
         )
-    return results
+
+    if not config.HYBRID:
+        return results
+
+    return _fuse(question, results, collection, name, top_k)
 
 
 def index_exists(corpus: str | None = None, variant: str = "default") -> bool:
@@ -236,5 +346,6 @@ def index_exists(corpus: str | None = None, variant: str = "default") -> bool:
 
 def reset():
     """Delete every index. Occasionally the fastest way out of a mess."""
+    _bm25_cache.clear()
     if config.CHROMA_DIR.exists():
         shutil.rmtree(config.CHROMA_DIR)

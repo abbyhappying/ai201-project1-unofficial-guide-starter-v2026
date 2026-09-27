@@ -35,6 +35,16 @@ CHUNK_OVERLAP = 120     # characters shared between neighbouring chunks
 
 TOP_K = 5               # how many chunks to pull back per question
 
+# Run a keyword (BM25) search alongside the vector search and combine the two
+# rankings. Set this to False to get the vector-only behaviour back — that is
+# how you run the same eval both ways for your run log.
+#
+# Why it's here: the vector search ranked the chunk answering "dinner at
+# 9:30pm" SIXTH, one place outside top-k, because the answer says "10:30pm"
+# and reading 9:30 < 10:30 is arithmetic, not similarity. Keyword search
+# ranks that chunk second. See `store.py::_fuse`.
+HYBRID = True
+
 # The relevance gate. If the best chunk is further away than this, the system
 # refuses to answer instead of handing the model thin material.
 #

@@ -292,10 +292,7 @@ What came back: Claude said a cutoff couldn't be chosen in the abstract — it h
 
 What I changed: Claude initially suggested moving the cutoff to 0.59 to "put it in the middle." I disagreed — 0.59 sits closer to the in-scope boundary, which would be riskier if a borderline question shifted. I argued for 0.60, which sits at the midpoint of the actual gap and matches the starter default already validated by my data.
 
-<!-- ── Stretch features ─────────────────────────────────────────────────────
-     Doing one? Say so here BEFORE you start. A feature this README never
-     claims earns nothing.
-     ───────────────────────────────────────────────────────────────────────── -->
+
 
 ---
 
@@ -304,15 +301,7 @@ What I changed: Claude initially suggested moving the cutoff to 0.59 to "put it 
 
 ## Run Log — Before
 
-<!-- Your five criteria, three runs each. `python run_eval.py --label before`
-     runs the questions, puts the OUT_OF_SCOPE ones through the gate, and
-     writes it all into results/ for you. Targets come from criteria.md; the
-     verdict column is your call.
 
-     Criterion 3 is measured in one deterministic pass rather than three, so
-     the same number goes in all three run columns. That's correct, not lazy.
-
-     Milestone 1. -->
 
 | Criterion | Target | Run 1 | Run 2 | Run 3 | Verdict |
 |---|---|---|---|---|---|
@@ -391,39 +380,85 @@ The target might be too low since the original 4/5 was justified by a claimed th
 
 ### Run Log — After
 
-<!-- Same format, same five criteria, three runs each.
-     `python run_eval.py --label after` -->
+
 
 | Criterion | Target | Run 1 | Run 2 | Run 3 | Verdict |
-|---|---|---|---|---|---|
-| 1. Retrieved chunk contains the answer | 4 of 5 |  |  |  |  |
-| 2. Every answer names a source | 5 of 5 |  |  |  |  |
-| 3. Gate stops out-of-corpus questions | 4 of 5 |  |  |  |  |
-| 4. | | | | | |
-| 5. | | | | | |
+
+| 1. Retrieved chunk contains the answer | 4 of 5 | 5/5 |5/5 | 5/5| MET|
+| 2. Every answer names a source | 5 of 5 | 5/5 |5/5 | 5/5| MET|
+| 3. Gate stops out-of-corpus questions | 4 of 5 | 5/5 |5/5 | 5/5| MET|
+| 4. Chunks hold together (self-contained, ≥200 chars) | 4 of 5 | 5/5 |5/5 | 5/5| MET|
+| 5. Stability across 3 runs (same core chunks + equivalent answers)|| 4 of 5 | 5/5 |5/5 | 5/5| MET|
+
+  run 2: pass  (best distance 0.293)
+  run 3: pass  (best distance 0.293)
+
+Which walking route in the region gives the most for the least effort, and how long is it?
+  run 1: pass  (best distance 0.435)
+  run 2: pass  (best distance 0.435)
+  run 3: pass  (best distance 0.435)
+
+Which town in the region is easiest to get around with limited mobility?
+  run 1: pass  (best distance 0.463)
+  run 2: pass  (best distance 0.463)
+  run 3: pass  (best distance 0.463)
+
+How often does the access road to Elder Ness flood, and for how long each time?
+  run 1: pass  (best distance 0.276)
+  run 2: pass  (best distance 0.276)
+  run 3: pass  (best distance 0.276)
+
+Out-of-scope questions (the gate should refuse these):
+  refused  (best distance 0.808)  What is the capital of Mongolia?
+  refused  (best distance 0.881)  How do I change the oil in a diesel engine?
+  refused  (best distance 0.982)  Who won the 1994 World Cup?
+  refused  (best distance 0.835)  What is the recommended dosage of ibuprofen for a headache?
+  refused  (best distance 0.859)  How do I write a for loop in Rust?
+  -> gate refused 5 of 5
+
+Wrote results\run_2026-09-27_1303_after.md
+15 model calls this session, 10124 tokens (9327 in, 797 out)
 
 **Did it help?**
 
-<!-- Say plainly whether it did, and how you know. If it made things worse,
-     say that — a change that backfired, honestly reported, earns full credit
-     and is more interesting than one that worked. What matters is that you can
-     tell.
-
-     Milestone 4. -->
+Hybrid search helped. It moved the answer-bearing chunk from rank 6 to rank 2 on the one question vector search got wrong.
+That flipped the answer from wrong to right.
+It left the other four questions and the gate's refusal behavior unchanged.
 
 ## What's Still Broken
+Retrieved chunks contain the answer — target 4 of 5
 
-<!-- For each criterion still missed after your fix: what you'd do about it,
-     and why you stopped where you did.
+The retrieval is now genuinely 5/5. The measurement is broken, and it was hiding a real failure.
 
-     "I ran out of time" is fine if it's true. Pretending nothing is left is
-     not.
+scorer.py::judge is expects.lower() in answer.lower(). For Q1 my expects is "Marchwood", and the before-run answers were "there is no mention of any town in the region where you can get a hot meal at 9:30pm (kitchens outside Marchwood stop serving at 9pm)". The token appears inside the negation, so it scored pass while saying the opposite of the right answer. My Before table says 5/5; the true before was 4/5.
 
-     Milestone 5. -->
+The criterion has a second problem: it is about retrieved chunks, but scorer.py only ever sees the answer text. Those come apart in both directions — a right answer can be guessed from a neighbouring chunk, a wrong answer can be produced from a correct one. Criterion 1 is not measured by the thing measuring it.
 
 ## What I'd Do Differently
 
-<!-- Knowing what you know now — which of your five criteria would you write
-     differently, and why?
+I'd rewrite criterion 1 to be measured at the retrieval layer — does the answer-bearing chunk's label appear in top-5, because my old scorer graded the answer text while claiming to grade retrieval, and that's why the hybrid win was invisible.
 
-     Milestone 5. -->
+##  How I use AI
+Moment 1 — Spotting the pattern in my Q1 failures
+What I asked for:
+I pasted the three failing Q1 answers from the run log side by side and asked Claude to look for what they had in common. I'd been reading them one at a time and they each felt like separate mistakes.
+
+What came back:
+It flagged that all three said the same thing in different words — "there is no mention of any town…", "I do not have enough information…". A negation pattern. Then it pointed at scorer.py::judge and noted the expected token "Marchwood" appears inside "kitchens outside Marchwood stop serving at 9pm", so the substring match passed a negated answer.
+
+What I changed about it:
+I didn't take the diagnosis on faith — I opened scorer.py and confirmed line 4 was expects.lower() in answer.lower(), then grepped the run log for "Marchwood" and saw it only appeared in that negating clause. Two things I corrected myself:
+
+Moment 2 — Stress-testing the RRF design before building it
+What I asked for:
+I described the hybrid plan in plain terms — build BM25 from Chroma at query time, fuse by rank with RRF, keep distance as-is — and asked Claude what could silently break. I specifically wanted failure modes, not a pep talk.
+
+What came back:
+Two traps I hadn't considered:
+
+Putting the fused score into Result.distance. RRF scores are unitless ranks, so a perfect match and "What is the capital of Mongolia?" both score ~0.0164 — the gate would pass everything and my Milestone 4 calibration would be meaningless.
+
+Fusion reorders the truncated list. If the vector-nearest chunk (distance 0.55) got pushed to rank 6 by fusion, the gate would see a best distance of 0.62 and refuse a question it used to answer. Its suggested fix: force the dense top-1 to survive fusion, so min(distance) stays bit-identical.
+
+What I changed about it:
+I verified both against the actual code rather than accepting them:

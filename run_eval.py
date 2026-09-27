@@ -190,7 +190,13 @@ def write_report(rows, transcript, gate_rows, args, corpus, top_k, threshold, sc
         f"# Run log{f' — {args.label}' if args.label else ''}",
         "",
         f"- Produced by: `run_eval.py::main`",
-        f"- Retrieval: `store.py::search`, chunks from `chunker.py::split_documents`",
+        f"- Retrieval: `store.py::search` — "
+        + (
+            "vector + keyword (BM25), merged by `store.py::_fuse`"
+            if config.HYBRID
+            else "vector only"
+        )
+        + ", chunks from `chunker.py::split_documents`",
         f"- Corpus: `{corpus}` (index variant `{args.variant}`)",
         f"- top-k: {top_k} · relevance cutoff: {threshold}",
         f"- Runs per question: {n}, caching off",

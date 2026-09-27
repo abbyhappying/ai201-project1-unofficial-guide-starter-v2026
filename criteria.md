@@ -45,9 +45,7 @@ When I ask a question my documents clearly don't cover, the relevance gate
 stops it and the system returns "I don't have enough information about that" —
 in at least 4 of 5 tries.
 
-<!-- The five questions are the ones in `OUT_OF_SCOPE` at the bottom of
-     `questions.py`, and `run_eval.py` puts them through the gate and writes
-     what happened into run log.  -->
+
 
 **Why this target:**
 The relevance gate compares distances to a numeric cutoff, and that cutoff sits in a fuzzy boundary zone where in-scope and out-of-scope questions can overlap — so one borderline case slipping through is expected. Requiring 5/5 would force the cutoff so low that legitimate questions get refused.
