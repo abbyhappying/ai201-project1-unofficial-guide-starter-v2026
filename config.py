@@ -68,7 +68,7 @@ THRESHOLD = 0.6
 MEMORY = os.getenv("AI201_MEMORY", "1") != "0"
 HISTORY_TURNS = 3          # most recent question/answer pairs given to the rewriter
 HISTORY_MAX_CHARS = 500   # hard cap on the history text, oldest turns dropped first
-REWRITE_MAX_CHARS = 300    # a rewrite longer than this is cut off: it has drifted
+REWRITE_MAX_CHARS = 150    # a rewrite longer than this is cut off: it has drifted
 
 
 # ─── Models ──────────────────────────────────────────────────────────────────
