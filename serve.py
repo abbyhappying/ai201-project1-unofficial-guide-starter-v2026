@@ -13,18 +13,18 @@ your system answers, you change it in those files and this one follows.
 
 Two routes:
 
-    POST /ask       {"question": "..."} in, the answer and its sources out
+    POST /ask       {"question": "...", "history": [...]} in, the answer and its sources out
     GET  /health    is the service up, and is there an index to search
+
+`history` is optional: earlier turns as [{"question": ..., "answer": ...}],
+oldest first. The client keeps it and sends it back; the server is stateless.
 
 Why this exists: `app.py` runs once and exits, which is fine on your laptop
 and impossible to deploy. A hosted service has to stay up and wait for
 requests. This is the smallest thing that does that.
 
-⚠️ There is deliberately no logging, no timing and no metrics in this file.
-Unit 9 has you build the structured log yourself — the request line, the
-timing field everyone skips, the whole instrument-before-you-deploy exercise.
-Shipping a logger here would hand you the answer to that. Add yours in unit 9;
-this file stays the bare shell until then.
+Each request is logged by request_log.py to logs/requests.jsonl and echoed to
+stdout, because a host's disk doesn't survive a restart but its log viewer does.
 """
 
 import os
@@ -87,14 +87,34 @@ def ask():
             400,
         )
 
+    # Optional conversation memory. The server keeps no state: the client sends
+    # the earlier turns back each time, as [{"question": ..., "answer": ...}],
+    # oldest first. That survives restarts and works across gunicorn workers.
+    history = payload.get("history") or []
+    if not isinstance(history, list):
+        return (
+            jsonify(
+                {
+                    "error": 'history must be a list like '
+                    '[{"question": "...", "answer": "..."}]'
+                }
+            ),
+            400,
+        )
+
+    import request_log
+
     try:
-        outcome = ask_pipeline(question, corpus=config.CORPUS)
+        outcome = ask_pipeline(question, corpus=config.CORPUS, history=history)
     except Exception as exc:  # noqa: BLE001 — a reader gets this, not a traceback
         return jsonify({"error": f"{type(exc).__name__}: {exc}"}), 500
+
+    request_log.write(outcome, source="http", corpus=config.CORPUS, echo=True)
 
     return jsonify(
         {
             "question": question,
+            "standalone_question": outcome["standalone_question"],
             "answer": outcome["answer"],
             "refused": outcome["refused"],
             "sources": outcome["sources"],

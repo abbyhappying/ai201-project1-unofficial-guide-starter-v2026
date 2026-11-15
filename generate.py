@@ -311,3 +311,59 @@ def answer_from_chunks(question: str, results, cache: bool = True) -> str:
     """
     prompt = build_prompt(question, results)
     return generate(prompt, system=GROUNDING_INSTRUCTION, cache=cache)
+
+
+# ─── Conversation memory: rewriting follow-ups ───────────────────────────────
+
+REWRITE_INSTRUCTION = """You rewrite a follow-up question so it can be understood without the conversation before it.
+
+Rules:
+- Replace pronouns and vague references ("it", "that one", "what about adding?") with what they refer to in the conversation.
+- If the question already stands on its own, return it unchanged.
+- Do not answer the question. Do not add facts, opinions or extra questions.
+- Return only the rewritten question, on one line."""
+
+
+def trim_history(history) -> list[dict]:
+    """Keep the last HISTORY_TURNS turns, then drop the oldest until the text
+    fits in HISTORY_MAX_CHARS. Bad entries are skipped rather than raised on,
+    because over HTTP the history comes from the client."""
+    turns = []
+    for turn in history or []:
+        if not isinstance(turn, dict):
+            continue
+        q = str(turn.get("question") or "").strip()
+        a = str(turn.get("answer") or "").strip()
+        if q:
+            turns.append({"question": q, "answer": a})
+
+    turns = turns[-config.HISTORY_TURNS:] if config.HISTORY_TURNS > 0 else []
+    while turns and len(format_history(turns)) > config.HISTORY_MAX_CHARS:
+        turns.pop(0)
+    return turns
+
+
+def format_history(turns) -> str:
+    return "\n".join(f"User: {t['question']}\nAssistant: {t['answer']}" for t in turns)
+
+
+def rewrite_question(question: str, history) -> str:
+    """Turn a follow-up into a standalone question, using recent history.
+
+    No history means no model call. The result is capped at REWRITE_MAX_CHARS,
+    and an empty result falls back to the original question.
+    """
+    turns = trim_history(history)
+    if not turns:
+        return question
+
+    prompt = (
+        f"Conversation so far:\n{format_history(turns)}\n\n"
+        f"Follow-up question: {question}\n\n"
+        f"Standalone question:"
+    )
+    text = generate(prompt, system=REWRITE_INSTRUCTION)
+    lines = [line.strip() for line in text.splitlines() if line.strip()]
+    rewritten = lines[0] if lines else ""
+    rewritten = rewritten.strip('"').strip()[: config.REWRITE_MAX_CHARS]
+    return rewritten or question

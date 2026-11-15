@@ -174,7 +174,7 @@ def cmd_retrieve(args):
     print("that your documents clearly don't cover, and look for the gap")
     print("between the two groups. Your cutoff goes in that gap.")
 
-
+#add history as arguments,history` is a list of {"question", "answer"} dicts, oldest first
 def ask_pipeline(
     question,
     corpus=None,
@@ -183,8 +183,9 @@ def ask_pipeline(
     threshold=None,
     on_gate=None,
     on_prompt=None,
+    history=None,
 ):
-    """Retrieve, gate, answer. Returns the outcome and prints nothing.
+    """Rewrite, retrieve, gate, answer. Returns the outcome and prints nothing.
 
     One question through all five stages, with the result handed back as a
     plain dict instead of printed. `_ask_one` below prints it for the command
@@ -198,13 +199,23 @@ def ask_pipeline(
     decision as soon as it's made, and `on_prompt` is handed the assembled
     prompt just before it goes out — that's how `--show-prompt` shows you the
     prompt while the model is still thinking rather than after.
+
+    `history` is a list of {"question", "answer"} dicts, oldest first. With
+    config.MEMORY on and history present, , and every later stage uses the rewrite. The history
+    itself never reaches the answer prompt.
     """
     from store import search
     import gate
-    from generate import answer_from_chunks, build_prompt
+    from generate import answer_from_chunks, build_prompt, rewrite_question, trim_history
+
+    started = time.perf_counter()
+
+    turns = trim_history(history) if config.MEMORY else []
+    #the question is first rewritten into a standalone one
+    standalone = rewrite_question(question, turns) if turns else question
 
     results = search(
-        question,
+        standalone, #add rewritte questions to search
         top_k=top_k or config.TOP_K,
         corpus=corpus or config.CORPUS,
         variant=variant,
@@ -215,6 +226,8 @@ def ask_pipeline(
 
     outcome = {
         "question": question,
+        "standalone_question": standalone, #add rewritten questions
+        "history_turns": len(turns),
         "refused": not decision.passed,
         "best_distance": decision.best_distance,
         "threshold": decision.threshold,
@@ -224,15 +237,18 @@ def ask_pipeline(
 
     if not decision.passed:
         outcome["answer"] = gate.REFUSAL
+        #check time consuming of ask pipeline
+        outcome["latency_ms"] = round((time.perf_counter() - started) * 1000)
         return outcome
 
-    prompt = build_prompt(question, results)
+    prompt = build_prompt(standalone, results)
     if on_prompt is not None:
         on_prompt(prompt)
 
     outcome["prompt"] = prompt
-    outcome["answer"] = answer_from_chunks(question, results)
+    outcome["answer"] = answer_from_chunks(standalone, results)
     outcome["sources"] = sorted({r.source for r in results})
+    outcome["latency_ms"] = round((time.perf_counter() - started) * 1000)
     return outcome
 
 
@@ -244,8 +260,11 @@ def _ask_one(
     threshold,
     show_distances=True,
     show_prompt=False,
+    history=None,
 ):
+    """Ask one question and print the result. Returns the full outcome dict."""
     import gate
+    import request_log
     from generate import GROUNDING_INSTRUCTION
 
     def print_distances(decision):
@@ -271,22 +290,27 @@ def _ask_one(
         threshold=threshold,
         on_gate=print_distances if show_distances else None,
         on_prompt=print_prompt if show_prompt else None,
+        history=history,
     )
+    request_log.write(outcome, source="cli", corpus=corpus)
+
+    if outcome["standalone_question"] != question:
+        print(f"  (searched as: {outcome['standalone_question']})")
 
     if outcome["refused"]:
         print(f"\n{gate.REFUSAL}\n")
-        return gate.REFUSAL
+        return outcome
 
     print(f"\n{outcome['answer']}\n")
     print(f"Sources retrieved: {', '.join(outcome['sources'])}\n")
-    return outcome["answer"]
+    return outcome
 
 
 def cmd_ask(args):
     corpus = args.corpus or config.CORPUS
     import generate as gen
 
-    try:
+    try: #as single question without history
         if args.question:
             _ask_one(
                 args.question,
@@ -297,7 +321,11 @@ def cmd_ask(args):
                 show_prompt=args.show_prompt,
             )
         else:
-            print("Ask a question, or press Enter on an empty line to quit.\n")
+            print("Ask a question, or press Enter on an empty line to quit.")
+            if config.MEMORY:
+                print("Memory is on: follow-up questions can refer to earlier ones.")
+            print()
+            history = [] #add history
             while True:
                 try:
                     question = input("> ").strip()
@@ -306,14 +334,24 @@ def cmd_ask(args):
                     break
                 if not question:
                     break
-                _ask_one(
+                outcome = _ask_one(
                     question,
                     corpus,
                     args.variant,
                     args.top_k,
                     args.threshold,
                     show_prompt=args.show_prompt,
+                    history=history,
                 )
+                # The resolved question goes into history, so a chain of
+                # follow-ups keeps resolving against something concrete.
+                history.append(
+                    {
+                        "question": outcome["standalone_question"],
+                        "answer": outcome["answer"],
+                    }
+                )
+                history = history[-config.HISTORY_TURNS:] if config.HISTORY_TURNS > 0 else []
     finally:
         print(gen.usage())
 

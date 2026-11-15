@@ -20,7 +20,7 @@ load_dotenv(ROOT / ".env")
 # Change this to switch corpora, or pass --corpus on the command line.
 # Options are the folder names inside corpora/. See corpora/README.md.
 
-CORPUS = os.getenv("AI201_CORPUS", "city_guides")
+CORPUS = os.getenv("AI201_CORPUS", "campus_life")
 
 
 # ─── Chunking (Milestone 3) ──────────────────────────────────────────────────
@@ -56,6 +56,21 @@ HYBRID = True
 THRESHOLD = 0.6
 
 
+# ─── Conversation memory ─────────────────────────────────────────────────────
+# A follow-up like "what about adding one?" retrieves nothing useful on its
+# own. With memory on, the recent turns are used to rewrite the follow-up into
+# a standalone question first, and THAT is what gets searched, gated and
+# answered. The history never goes into the answer prompt, so every fact still
+# has to come from the retrieved documents.
+#
+# run_eval.py doesn't go through ask_pipeline, so evals are unaffected either
+# way. Set AI201_MEMORY=0 to switch it off.
+MEMORY = os.getenv("AI201_MEMORY", "1") != "0"
+HISTORY_TURNS = 3          # most recent question/answer pairs given to the rewriter
+HISTORY_MAX_CHARS = 2000   # hard cap on the history text, oldest turns dropped first
+REWRITE_MAX_CHARS = 300    # a rewrite longer than this is cut off: it has drifted
+
+
 # ─── Models ──────────────────────────────────────────────────────────────────
 # Embeddings run on your own machine and cost no API quota.
 # Only generation calls out to a service.
@@ -88,6 +103,10 @@ CACHE_DIR = ROOT / ".cache"
 CORPORA_DIR = ROOT / "corpora"
 CHROMA_DIR = ROOT / "chroma_db"
 RESULTS_DIR = ROOT / "results"
+
+# One JSON object per line, appended per request (see request_log.py).
+# Ignored by git: it holds whatever users typed.
+LOG_PATH = Path(os.getenv("AI201_LOG_PATH", ROOT / "logs" / "requests.jsonl"))
 
 
 def corpus_path(name: str | None = None) -> Path:

@@ -462,3 +462,45 @@ Fusion reorders the truncated list. If the vector-nearest chunk (distance 0.55) 
 
 What I changed about it:
 I verified both against the actual code rather than accepting them:
+
+## The Shape
+
+I am taking **Shape C — Extend one capability**. The system I am extending is
+the Unofficial Guide RAG pipeline I built in Units 1 and 2. The new capability
+is **multi-turn memory**: today the system is stateless, so a follow-up like
+"how do I get there in winter?" is embedded on its own, lands far from every
+chunk, and is refused by the relevance gate before the model sees it. I am
+adding a query-rewrite step that runs only on follow-up turns: the recent
+turns are passed to the model, which rewrites the follow-up into a standalone
+question (resolving "there" into the named town), and only that rewritten
+question is embedded, gated, and answered. The stored documents, the chunker,
+the gate cutoff and the generation prompt all stay as they were; what changes is
+what gets searched. Memory is off by default via an environment variable
+(`AI201_MEMORY=0`) so the same test scripts can be run with and without it and
+the two result sets can be compared.
+
+## Out of Scope
+
+Three things I considered and deliberately did not do:
+
+1. **I am not adding cross-session storage.** History lives only for the
+   length of one conversation and is held by the caller (the command line loop,
+   or the client sending JSON to `/ask`). I am not adding a database, user
+   accounts, or a server-side session store. Persisting memory across sessions
+   would raise questions about privacy and expiry that are a different unit's
+   work.
+
+2. **I am not changing the retrieval strategy.** The hybrid vector + BM25
+   search, the chunking, and the 0.6 relevance gate are the system I already
+   built and validated. Multi-turn memory sits *in front of* retrieval — it
+   changes the question, not how the question is matched. I am not adding a
+   second retriever or re-tuning the cutoff, because then a before/after
+   comparison could not tell me whether memory helped or whether the new
+   retriever did.
+
+3. **I am not rebuilding the interface.** The CLI (`python app.py ask`) and the
+   existing `/ask` endpoint stay as they are apart from accepting a history
+   list and returning the rewritten question. I am not adding a chat UI, and I
+   am not rewriting `serve.py` around a session framework. The point of this
+   unit is one bounded capability plus the evidence it works, not a new
+   front end.
