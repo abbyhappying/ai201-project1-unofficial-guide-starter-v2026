@@ -320,7 +320,7 @@ def cmd_ask(args):
                 args.threshold,
                 show_prompt=args.show_prompt,
             )
-        else:
+        else: #user didn't ask questions
             print("Ask a question, or press Enter on an empty line to quit.")
             if config.MEMORY:
                 print("Memory is on: follow-up questions can refer to earlier ones.")

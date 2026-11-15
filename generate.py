@@ -319,11 +319,11 @@ REWRITE_INSTRUCTION = """You rewrite a follow-up question so it can be understoo
 
 Rules:
 - Replace pronouns and vague references ("it", "that one", "what about adding?") with what they refer to in the conversation.
-- If the question already stands on its own, return it unchanged.
+- If the question already stands on its own, return it EXACTLY as given.
 - Do not answer the question. Do not add facts, opinions or extra questions.
 - Return only the rewritten question, on one line."""
 
-
+# history Q&A
 def trim_history(history) -> list[dict]:
     """Keep the last HISTORY_TURNS turns, then drop the oldest until the text
     fits in HISTORY_MAX_CHARS. Bad entries are skipped rather than raised on,
@@ -346,7 +346,7 @@ def trim_history(history) -> list[dict]:
 def format_history(turns) -> str:
     return "\n".join(f"User: {t['question']}\nAssistant: {t['answer']}" for t in turns)
 
-
+#rewrite follow-up questions into standalone questions
 def rewrite_question(question: str, history) -> str:
     """Turn a follow-up into a standalone question, using recent history.
 
