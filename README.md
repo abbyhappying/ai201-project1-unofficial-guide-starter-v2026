@@ -504,3 +504,197 @@ Three things I considered and deliberately did not do:
    am not rewriting `serve.py` around a session framework. The point of this
    unit is one bounded capability plus the evidence it works, not a new
    front end.
+
+## Instrumentation
+
+Every question asked through `python app.py ask` (or `POST /ask`) appends one
+JSON record to `logs/requests.jsonl`, including runs that crash. The logger is
+`request_log.py`; `python app.py logs` reads the file back
+(`-n 50`, `--raw`, `--errors`). Each record has named fields:
+
+| Field | What it holds |
+|---|---|
+| `ts`, `run_id`, `session_id`, `turn` | UTC timestamp, a unique ID per record, one ID per chat session, turn number within it |
+| `status` | `ok`, `refused` (relevance gate said no) or `error` |
+| `input` | the question as typed, the `standalone_question` actually searched, whether it was `rewritten`, how many `history_turns` were used |
+| `output` | the answer and its sources, or `error_type` + `error` |
+| `duration_ms` | `total`, plus `rewrite`, `retrieve`, `generate` |
+| `retrieval` | `best_distance`, `threshold`, every retrieved chunk with its distance |
+| `usage` | `model_calls`, `cache_hits`, `tokens` (prompt / output / total), `tokens_by_stage`, `est_cost_usd` |
+| `settings` | corpus, model, embedding model, top_k, hybrid, memory, cache, prices used |
+
+### Ten runs
+
+How I measured: I ran the same question, `Where can I do laundry?`, ten times
+against `campus_life`, each as its own `python app.py ask "..."` command, with
+the response cache off (`AI201_CACHE=0`) so every run made a real model call.
+Times are wall-clock, measured inside `ask_pipeline` with
+`time.perf_counter()`. Token counts are what Gemini reported back for the call
+(`usage_metadata`), not an estimate.
+
+The entries below are the real records from `logs/requests.jsonl`, shortened
+for reading: the answer and error text are cut to their first ~100
+characters, and `settings`, `retrieval.results` and `usage.tokens_by_stage` are
+left out. Those were the same on every run: gemini-3.5-flash-lite,
+all-MiniLM-L6-v2, top_k 5, hybrid on, memory on, cache off, prices 0. One
+complete record follows the list.
+
+```jsonl
+{"schema": 1, "ts": "2026-11-15T18:17:58.609+00:00", "run_id": "005a1f79eccf", "session_id": "40eedbef5e00", "turn": 1, "source": "cli", "status": "ok", "input": {"question": "Where can I do laundry?", "standalone_question": "Where can I do laundry?", "rewritten": false, "history_turns": 0}, "output": {"answer": "Based on the provided documents, you can do laundry in the following locations:  * Aldridg ...", "sources": ["housing_aldridge_hall_laundry.txt", "housing_fenwick_court_laundry.txt", "housing_innisfree_hall_laundry.txt", "housing_old_brewhouse_laundry.txt", "housing_tamsin_court_laundry.txt"]}, "duration_ms": {"total": 5239, "rewrite": 0, "retrieve": 1820, "generate": 3419}, "retrieval": {"best_distance": 0.3521, "threshold": 0.6}, "usage": {"model_calls": 1, "cache_hits": 0, "tokens": {"prompt": 570, "output": 111, "total": 681}, "est_cost_usd": 0.0}}
+{"schema": 1, "ts": "2026-11-15T18:18:04.398+00:00", "run_id": "f4bee5827087", "session_id": "d4e42e089f7f", "turn": 1, "source": "cli", "status": "ok", "input": {"question": "Where can I do laundry?", "standalone_question": "Where can I do laundry?", "rewritten": false, "history_turns": 0}, "output": {"answer": "Based on the provided documents, you can do laundry in the following locations: - Aldridge ...", "sources": ["housing_aldridge_hall_laundry.txt", "housing_fenwick_court_laundry.txt", "housing_innisfree_hall_laundry.txt", "housing_old_brewhouse_laundry.txt", "housing_tamsin_court_laundry.txt"]}, "duration_ms": {"total": 3607, "rewrite": 0, "retrieve": 1013, "generate": 2594}, "retrieval": {"best_distance": 0.3521, "threshold": 0.6}, "usage": {"model_calls": 1, "cache_hits": 0, "tokens": {"prompt": 570, "output": 111, "total": 681}, "est_cost_usd": 0.0}}
+{"schema": 1, "ts": "2026-11-15T18:18:10.286+00:00", "run_id": "d3bb31d4ab50", "session_id": "0d290a9dd1fa", "turn": 1, "source": "cli", "status": "ok", "input": {"question": "Where can I do laundry?", "standalone_question": "Where can I do laundry?", "rewritten": false, "history_turns": 0}, "output": {"answer": "You can do laundry in the following locations, based on the provided documents: - Aldridge ...", "sources": ["housing_aldridge_hall_laundry.txt", "housing_fenwick_court_laundry.txt", "housing_innisfree_hall_laundry.txt", "housing_old_brewhouse_laundry.txt", "housing_tamsin_court_laundry.txt"]}, "duration_ms": {"total": 3859, "rewrite": 0, "retrieve": 1021, "generate": 2838}, "retrieval": {"best_distance": 0.3521, "threshold": 0.6}, "usage": {"model_calls": 1, "cache_hits": 0, "tokens": {"prompt": 570, "output": 111, "total": 681}, "est_cost_usd": 0.0}}
+{"schema": 1, "ts": "2026-11-15T18:18:20.843+00:00", "run_id": "5d991682514b", "session_id": "f4a9f9792176", "turn": 1, "source": "cli", "status": "ok", "input": {"question": "Where can I do laundry?", "standalone_question": "Where can I do laundry?", "rewritten": false, "history_turns": 0}, "output": {"answer": "Based on the provided documents, you can do laundry in the following locations:  * Aldridg ...", "sources": ["housing_aldridge_hall_laundry.txt", "housing_fenwick_court_laundry.txt", "housing_innisfree_hall_laundry.txt", "housing_old_brewhouse_laundry.txt", "housing_tamsin_court_laundry.txt"]}, "duration_ms": {"total": 8349, "rewrite": 0, "retrieve": 3843, "generate": 4502}, "retrieval": {"best_distance": 0.3521, "threshold": 0.6}, "usage": {"model_calls": 1, "cache_hits": 0, "tokens": {"prompt": 570, "output": 111, "total": 681}, "est_cost_usd": 0.0}}
+{"schema": 1, "ts": "2026-11-15T18:18:28.475+00:00", "run_id": "d1d1e027f6eb", "session_id": "00e5f19a4d33", "turn": 1, "source": "cli", "status": "ok", "input": {"question": "Where can I do laundry?", "standalone_question": "Where can I do laundry?", "rewritten": false, "history_turns": 0}, "output": {"answer": "Based on the provided documents, you can do laundry in the following locations:  * Aldridg ...", "sources": ["housing_aldridge_hall_laundry.txt", "housing_fenwick_court_laundry.txt", "housing_innisfree_hall_laundry.txt", "housing_old_brewhouse_laundry.txt", "housing_tamsin_court_laundry.txt"]}, "duration_ms": {"total": 4645, "rewrite": 0, "retrieve": 1559, "generate": 3086}, "retrieval": {"best_distance": 0.3521, "threshold": 0.6}, "usage": {"model_calls": 1, "cache_hits": 0, "tokens": {"prompt": 570, "output": 111, "total": 681}, "est_cost_usd": 0.0}}
+{"schema": 1, "ts": "2026-11-15T18:18:36.865+00:00", "run_id": "f434fc8e077c", "session_id": "1a8e24f6b18b", "turn": 1, "source": "cli", "status": "ok", "input": {"question": "Where can I do laundry?", "standalone_question": "Where can I do laundry?", "rewritten": false, "history_turns": 0}, "output": {"answer": "Based on the provided documents, you can do laundry in the following locations:  * Aldridg ...", "sources": ["housing_aldridge_hall_laundry.txt", "housing_fenwick_court_laundry.txt", "housing_innisfree_hall_laundry.txt", "housing_old_brewhouse_laundry.txt", "housing_tamsin_court_laundry.txt"]}, "duration_ms": {"total": 5062, "rewrite": 0, "retrieve": 1543, "generate": 3518}, "retrieval": {"best_distance": 0.3521, "threshold": 0.6}, "usage": {"model_calls": 1, "cache_hits": 0, "tokens": {"prompt": 570, "output": 111, "total": 681}, "est_cost_usd": 0.0}}
+{"schema": 1, "ts": "2026-11-15T18:18:46.064+00:00", "run_id": "6a82eefefc51", "session_id": "4e6306cfad13", "turn": 1, "source": "cli", "status": "ok", "input": {"question": "Where can I do laundry?", "standalone_question": "Where can I do laundry?", "rewritten": false, "history_turns": 0}, "output": {"answer": "Based on the provided documents, you can do laundry in the following locations:  * Aldridg ...", "sources": ["housing_aldridge_hall_laundry.txt", "housing_fenwick_court_laundry.txt", "housing_innisfree_hall_laundry.txt", "housing_old_brewhouse_laundry.txt", "housing_tamsin_court_laundry.txt"]}, "duration_ms": {"total": 5764, "rewrite": 0, "retrieve": 2098, "generate": 3666}, "retrieval": {"best_distance": 0.3521, "threshold": 0.6}, "usage": {"model_calls": 1, "cache_hits": 0, "tokens": {"prompt": 570, "output": 111, "total": 681}, "est_cost_usd": 0.0}}
+{"schema": 1, "ts": "2026-11-15T18:18:56.710+00:00", "run_id": "9139bdbaf3fe", "session_id": "34e52f164e67", "turn": 1, "source": "cli", "status": "ok", "input": {"question": "Where can I do laundry?", "standalone_question": "Where can I do laundry?", "rewritten": false, "history_turns": 0}, "output": {"answer": "Based on the provided documents, you can do laundry in the following locations:  * Aldridg ...", "sources": ["housing_aldridge_hall_laundry.txt", "housing_fenwick_court_laundry.txt", "housing_innisfree_hall_laundry.txt", "housing_old_brewhouse_laundry.txt", "housing_tamsin_court_laundry.txt"]}, "duration_ms": {"total": 6833, "rewrite": 0, "retrieve": 1705, "generate": 5128}, "retrieval": {"best_distance": 0.3521, "threshold": 0.6}, "usage": {"model_calls": 1, "cache_hits": 0, "tokens": {"prompt": 570, "output": 111, "total": 681}, "est_cost_usd": 0.0}}
+{"schema": 1, "ts": "2026-11-15T18:19:04.402+00:00", "run_id": "8c883836040c", "session_id": "0ea7766f5ce7", "turn": 1, "source": "cli", "status": "ok", "input": {"question": "Where can I do laundry?", "standalone_question": "Where can I do laundry?", "rewritten": false, "history_turns": 0}, "output": {"answer": "You can do laundry in the following locations, as found in their respective documents: - A ...", "sources": ["housing_aldridge_hall_laundry.txt", "housing_fenwick_court_laundry.txt", "housing_innisfree_hall_laundry.txt", "housing_old_brewhouse_laundry.txt", "housing_tamsin_court_laundry.txt"]}, "duration_ms": {"total": 5339, "rewrite": 0, "retrieve": 1305, "generate": 4033}, "retrieval": {"best_distance": 0.3521, "threshold": 0.6}, "usage": {"model_calls": 1, "cache_hits": 0, "tokens": {"prompt": 570, "output": 112, "total": 682}, "est_cost_usd": 0.0}}
+{"schema": 1, "ts": "2026-11-15T18:19:10.361+00:00", "run_id": "cc0e72c324c9", "session_id": "1fa5532b5aa1", "turn": 1, "source": "cli", "status": "ok", "input": {"question": "Where can I do laundry?", "standalone_question": "Where can I do laundry?", "rewritten": false, "history_turns": 0}, "output": {"answer": "You can do laundry in the following locations, as stated in their respective documents: -  ...", "sources": ["housing_aldridge_hall_laundry.txt", "housing_fenwick_court_laundry.txt", "housing_innisfree_hall_laundry.txt", "housing_old_brewhouse_laundry.txt", "housing_tamsin_court_laundry.txt"]}, "duration_ms": {"total": 4004, "rewrite": 0, "retrieve": 1191, "generate": 2813}, "retrieval": {"best_distance": 0.3521, "threshold": 0.6}, "usage": {"model_calls": 1, "cache_hits": 0, "tokens": {"prompt": 570, "output": 112, "total": 682}, "est_cost_usd": 0.0}}
+```
+
+**Failed run.** I tested the failure path by running the same question with an
+invalid API key. Retrieval and the gate passed (best distance 0.352), then the
+model call was rejected. The run was logged as `status: "error"` with the
+exception type and message, and the CLI exited with code 1:
+
+```jsonl
+{"schema": 1, "ts": "2026-11-15T18:23:18.218+00:00", "run_id": "4c2455d95269", "session_id": "5c6d98b33048", "turn": 1, "source": "cli", "status": "error", "input": {"question": "Where can I do laundry?", "history_turns": 0}, "output": {"error_type": "ClientError", "error": "400 INVALID_ARGUMENT. {'error': {'code': 400, 'message': 'API key not valid. Please pass a valid API key.', 's ..."}, "duration_ms": {"total": 4380}}
+```
+
+One complete, unshortened record (run 1):
+
+```json
+{
+  "schema": 1,
+  "ts": "2026-11-15T18:17:58.609+00:00",
+  "run_id": "005a1f79eccf",
+  "session_id": "40eedbef5e00",
+  "turn": 1,
+  "source": "cli",
+  "status": "ok",
+  "input": {
+    "question": "Where can I do laundry?",
+    "standalone_question": "Where can I do laundry?",
+    "rewritten": false,
+    "history_turns": 0
+  },
+  "output": {
+    "answer": "Based on the provided documents, you can do laundry in the following locations:\n\n* Aldridge Hall (housing_aldridge_hall_laundry.txt)\n* Innisfree Hall (housing_innisfree_hall_laundry.txt)\n* Old Brewhouse (housing_old_brewhouse_laundry.txt)\n* Tamsin Court (housing_tamsin_court_laundry.txt)\n* Fenwick Court (housing_fenwick_court_laundry.txt)",
+    "sources": [
+      "housing_aldridge_hall_laundry.txt",
+      "housing_fenwick_court_laundry.txt",
+      "housing_innisfree_hall_laundry.txt",
+      "housing_old_brewhouse_laundry.txt",
+      "housing_tamsin_court_laundry.txt"
+    ]
+  },
+  "duration_ms": {
+    "total": 5239,
+    "rewrite": 0,
+    "retrieve": 1820,
+    "generate": 3419
+  },
+  "retrieval": {
+    "best_distance": 0.3521,
+    "threshold": 0.6,
+    "results": [
+      {
+        "source": "housing_aldridge_hall_laundry.txt",
+        "distance": 0.4128
+      },
+      {
+        "source": "housing_innisfree_hall_laundry.txt",
+        "distance": 0.3977
+      },
+      {
+        "source": "housing_old_brewhouse_laundry.txt",
+        "distance": 0.3521
+      },
+      {
+        "source": "housing_tamsin_court_laundry.txt",
+        "distance": 0.4502
+      },
+      {
+        "source": "housing_fenwick_court_laundry.txt",
+        "distance": 0.4287
+      }
+    ]
+  },
+  "usage": {
+    "model_calls": 1,
+    "cache_hits": 0,
+    "tokens": {
+      "prompt": 570,
+      "output": 111,
+      "total": 681
+    },
+    "tokens_by_stage": {
+      "rewrite": {
+        "prompt": 0,
+        "output": 0,
+        "total": 0
+      },
+      "generate": {
+        "prompt": 570,
+        "output": 111,
+        "total": 681
+      }
+    },
+    "est_cost_usd": 0.0
+  },
+  "settings": {
+    "corpus": "campus_life",
+    "variant": "default",
+    "model": "gemini-3.5-flash-lite",
+    "embedding_model": "all-MiniLM-L6-v2",
+    "top_k": 5,
+    "hybrid": true,
+    "memory": true,
+    "cache": false,
+    "price_input_per_m": 0.0,
+    "price_output_per_m": 0.0
+  }
+}
+```
+
+### Averages over the ten runs
+
+| Measure | Mean | Median | Min | Max | Std dev |
+|---|---|---|---|---|---|
+| Total time (ms) | 5270 | 5151 | 3607 | 8349 | 1452 |
+| Retrieve (ms) | 1710 | 1551 | 1013 | 3843 | 827 |
+| Generate (ms) | 3560 | 3469 | 2594 | 5128 | 806 |
+| Prompt tokens | 570 | 570 | 570 | 570 | 0 |
+| Output tokens | 111.2 | 111 | 111 | 112 | 0.4 |
+| Total tokens | 681.2 | 681 | 681 | 682 | 0.4 |
+| Model calls | 1 | 1 | 1 | 1 | 0 |
+| Best distance | 0.3521 | 0.3521 | 0.3521 | 0.3521 | 0 |
+
+Retrieval and tokens were identical every run; the variation is all time.
+Generation (the network call to Gemini) is about two thirds of the total.
+Retrieval runs locally, but each run was a fresh process, so its time likely
+includes loading the embedding model and index each time. That would explain
+why it swings from 1.0 s to 3.8 s. I didn't time that load separately.
+
+## What It Costs
+
+**One run costs 1 model call, about 681 tokens (570 in, 111 out) and about
+5.3 seconds. On the free Gemini tier that is $0.00.**
+
+Method: the numbers are the means of the ten logged runs above. Tokens come
+from Gemini's own usage report on each response, split per stage in
+`usage.tokens_by_stage`. Dollar cost is computed per record as
+`prompt_tokens × PRICE_INPUT_PER_M / 1,000,000 + output_tokens × PRICE_OUTPUT_PER_M / 1,000,000`.
+Both prices are set in `config.py` (or `.env`) and are 0 because this project
+runs on the free tier, so every record logs `est_cost_usd: 0.0`. On a paid key,
+putting the model's real prices in `.env` makes the same field report dollars
+with no code change.
+
+Since the dollar cost is zero, the real cost is **requests against the free
+tier's quota**, and secondly time. That's why `model_calls` is logged on every
+record. A first question costs 1 call. With memory on, a follow-up costs **2**:
+one to rewrite it into a standalone question and one to answer. In a separate
+two-turn test (not one of the ten above), the follow-up used 1036 tokens:
+275 for the rewrite and 761 for the answer. So memory roughly doubles the
+quota use of every follow-up. An answer served from the response cache costs
+0 calls and 0 tokens, and is counted in `usage.cache_hits`.

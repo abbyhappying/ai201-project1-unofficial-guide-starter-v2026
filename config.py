@@ -85,6 +85,22 @@ REWRITE_MAX_CHARS = 150    # a rewrite longer than this is cut off: it has drift
 EMBEDDING_MODEL = "all-MiniLM-L6-v2"
 MODEL = os.getenv("AI201_MODEL", "gemini-3.5-flash-lite")
 
+# Price per million tokens, in US dollars, used only to put an estimated cost
+# on each record in logs/requests.jsonl. 0 = the free tier, where a run costs
+# nothing and the real limit is the request quota (see model_calls in the log).
+# On a paid key, copy your model's input/output prices from Google's pricing
+# page into .env rather than trusting numbers hard-coded here.
+PRICE_INPUT_PER_M = float(os.getenv("AI201_PRICE_INPUT_PER_M", "0"))
+PRICE_OUTPUT_PER_M = float(os.getenv("AI201_PRICE_OUTPUT_PER_M", "0"))
+
+
+def estimate_cost_usd(prompt_tokens: int, output_tokens: int) -> float:
+    return round(
+        prompt_tokens * PRICE_INPUT_PER_M / 1e6
+        + output_tokens * PRICE_OUTPUT_PER_M / 1e6,
+        6,
+    )
+
 
 # ─── Rate limiting and quota guards ──────────────────────────────────────────
 # You should not need to touch these. They exist so that a runaway loop costs

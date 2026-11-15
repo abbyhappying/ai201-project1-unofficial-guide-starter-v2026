@@ -166,6 +166,10 @@ def call_count() -> int:
     return _session_calls
 
 
+def cache_hit_count() -> int:
+    return _cache_hits
+
+
 def token_counts() -> dict[str, int]:
     """Tokens this session actually used, as reported by the service.
 
@@ -326,8 +330,10 @@ Rules:
 # history Q&A
 def trim_history(history) -> list[dict]:
     """Keep the last HISTORY_TURNS turns, then drop the oldest until the text
-    fits in HISTORY_MAX_CHARS. Bad entries are skipped rather than raised on,
-    because over HTTP the history comes from the client."""
+    fits in HISTORY_MAX_CHARS. The newest turn is never dropped: if it alone
+    is too long, its answer is cut short instead, because the newest turn is
+    the one a follow-up almost always refers to. Bad entries are skipped
+    rather than raised on, because over HTTP the history comes from the client."""
     turns = []
     for turn in history or []:
         if not isinstance(turn, dict):
@@ -338,8 +344,14 @@ def trim_history(history) -> list[dict]:
             turns.append({"question": q, "answer": a})
 
     turns = turns[-config.HISTORY_TURNS:] if config.HISTORY_TURNS > 0 else []
-    while turns and len(format_history(turns)) > config.HISTORY_MAX_CHARS:
+    while len(turns) > 1 and len(format_history(turns)) > config.HISTORY_MAX_CHARS:
         turns.pop(0)
+    if turns:
+        overflow = len(format_history(turns)) - config.HISTORY_MAX_CHARS
+        if overflow > 0:
+            last = turns[-1]
+            keep = max(0, len(last["answer"]) - overflow - 3)
+            turns[-1] = {"question": last["question"], "answer": last["answer"][:keep] + "..."}
     return turns
 
 

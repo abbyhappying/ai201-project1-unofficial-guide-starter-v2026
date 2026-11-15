@@ -8,6 +8,7 @@ The Unofficial Guide — command line.
     python app.py chunks                 print sample chunks      (Milestone 3)
     python app.py retrieve "question"    show distances, no answer (Milestone 4)
     python app.py corpora                list the available corpora
+    python app.py logs                   read back the run log (logs/requests.jsonl)
 
 Every command takes --corpus NAME to work with a different corpus without
 editing config.py.
@@ -206,20 +207,52 @@ def ask_pipeline(
     """
     from store import search
     import gate
+    import generate as gen
     from generate import answer_from_chunks, build_prompt, rewrite_question, trim_history
 
     started = time.perf_counter()
+    # Snapshot the session counters so this turn's own cost can be logged.
+    calls_before = gen.call_count()
+    tokens_before = gen.token_counts()
+    hits_before = gen.cache_hit_count()
+    stage_ms = {}
+    stage_tokens = {}  # tokens per model-calling stage: rewrite, generate
+
+    def ms_since(t):
+        return round((time.perf_counter() - t) * 1000)
+
+    def token_delta(before):
+        after = gen.token_counts()
+        return {k: after[k] - before[k] for k in after}
+
+    def finish(outcome):
+        outcome["stage_ms"] = stage_ms
+        outcome["latency_ms"] = ms_since(started)
+        outcome["model_calls"] = gen.call_count() - calls_before
+        outcome["cache_hits"] = gen.cache_hit_count() - hits_before
+        outcome["tokens"] = token_delta(tokens_before)
+        outcome["tokens_by_stage"] = stage_tokens
+        outcome["est_cost_usd"] = config.estimate_cost_usd(
+            outcome["tokens"]["prompt"], outcome["tokens"]["output"]
+        )
+        return outcome
 
     turns = trim_history(history) if config.MEMORY else []
     #the question is first rewritten into a standalone one
+    t = time.perf_counter()
+    before = gen.token_counts()
     standalone = rewrite_question(question, turns) if turns else question
+    stage_ms["rewrite"] = ms_since(t)
+    stage_tokens["rewrite"] = token_delta(before)
 
+    t = time.perf_counter()
     results = search(
         standalone, #add rewritte questions to search
         top_k=top_k or config.TOP_K,
         corpus=corpus or config.CORPUS,
         variant=variant,
     )
+    stage_ms["retrieve"] = ms_since(t)
     decision = gate.check(results, threshold=threshold)
     if on_gate is not None:
         on_gate(decision)
@@ -227,29 +260,36 @@ def ask_pipeline(
     outcome = {
         "question": question,
         "standalone_question": standalone, #add rewritten questions
+        "rewritten": standalone != question,
         "history_turns": len(turns),
         "refused": not decision.passed,
         "best_distance": decision.best_distance,
         "threshold": decision.threshold,
+        # Every chunk retrieved, in rank order, with its distance: what you
+        # need later to see why an answer was refused or went wrong.
+        "retrieved": [
+            {"source": r.source, "distance": round(r.distance, 4)} for r in results
+        ],
         "sources": [],
         "prompt": None,
     }
 
     if not decision.passed:
         outcome["answer"] = gate.REFUSAL
-        #check time consuming of ask pipeline
-        outcome["latency_ms"] = round((time.perf_counter() - started) * 1000)
-        return outcome
+        return finish(outcome)
 
     prompt = build_prompt(standalone, results)
     if on_prompt is not None:
         on_prompt(prompt)
 
     outcome["prompt"] = prompt
+    t = time.perf_counter()
+    before = gen.token_counts()
     outcome["answer"] = answer_from_chunks(standalone, results)
+    stage_ms["generate"] = ms_since(t)
+    stage_tokens["generate"] = token_delta(before)
     outcome["sources"] = sorted({r.source for r in results})
-    outcome["latency_ms"] = round((time.perf_counter() - started) * 1000)
-    return outcome
+    return finish(outcome)
 
 
 def _ask_one(
@@ -282,17 +322,27 @@ def _ask_one(
         print(prompt)
         print("=" * 70)
 
-    outcome = ask_pipeline(
-        question,
-        corpus=corpus,
-        variant=variant,
-        top_k=top_k,
-        threshold=threshold,
-        on_gate=print_distances if show_distances else None,
-        on_prompt=print_prompt if show_prompt else None,
-        history=history,
-    )
-    request_log.write(outcome, source="cli", corpus=corpus)
+    started = time.perf_counter()
+    try:
+        outcome = ask_pipeline(
+            question,
+            corpus=corpus,
+            variant=variant,
+            top_k=top_k,
+            threshold=threshold,
+            on_gate=print_distances if show_distances else None,
+            on_prompt=print_prompt if show_prompt else None,
+            history=history,
+        )
+    except Exception as exc:
+        # A failed run is the one you most need a record of.
+        request_log.write_error(
+            question, exc, source="cli", corpus=corpus, variant=variant,
+            history_turns=len(history or []),
+            latency_ms=round((time.perf_counter() - started) * 1000),
+        )
+        raise
+    request_log.write(outcome, source="cli", corpus=corpus, variant=variant)
 
     if outcome["standalone_question"] != question:
         print(f"  (searched as: {outcome['standalone_question']})")
@@ -356,6 +406,27 @@ def cmd_ask(args):
         print(gen.usage())
 
 
+def cmd_logs(args):
+    import json
+
+    import request_log
+
+    records = request_log.read()
+    if args.errors:
+        records = [r for r in records if r.get("status") == "error"]
+    records = records[-args.n:] if args.n else records
+    if not records:
+        print(f"No records in {config.LOG_PATH} yet. Ask a question first.")
+        return
+    for record in records:
+        if args.raw:
+            print(json.dumps(record, ensure_ascii=False))
+        else:
+            print(request_log.summarise(record) + "\n")
+    if not args.raw:
+        print(f"{len(records)} record(s) from {config.LOG_PATH}")
+
+
 def build_parser():
     parser = argparse.ArgumentParser(
         prog="app.py",
@@ -410,6 +481,12 @@ def build_parser():
         help="print the assembled prompt before the answer",
     )
     p_ask.set_defaults(func=cmd_ask)
+
+    p_logs = sub.add_parser("logs", help="read back the structured run log")
+    p_logs.add_argument("-n", type=int, default=10, help="how many recent records")
+    p_logs.add_argument("--raw", action="store_true", help="print the stored JSON lines")
+    p_logs.add_argument("--errors", action="store_true", help="only runs that failed")
+    p_logs.set_defaults(func=cmd_logs)
 
     return parser
 

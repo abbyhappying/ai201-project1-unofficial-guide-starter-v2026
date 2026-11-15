@@ -102,11 +102,20 @@ def ask():
             400,
         )
 
+    import time
+
     import request_log
 
+    started = time.perf_counter()
     try:
         outcome = ask_pipeline(question, corpus=config.CORPUS, history=history)
     except Exception as exc:  # noqa: BLE001 — a reader gets this, not a traceback
+        request_log.write_error(
+            question, exc, source="http", corpus=config.CORPUS,
+            history_turns=len(history),
+            latency_ms=round((time.perf_counter() - started) * 1000),
+            echo=True,
+        )
         return jsonify({"error": f"{type(exc).__name__}: {exc}"}), 500
 
     request_log.write(outcome, source="http", corpus=config.CORPUS, echo=True)

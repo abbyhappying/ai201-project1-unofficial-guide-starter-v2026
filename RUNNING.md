@@ -242,16 +242,51 @@ start** — a feature the README never claims earns nothing.
 `rank-bm25` is already installed for unit 2's hybrid-search option. The
 dependency ships; the implementation is yours.
 
----
+## Final Project
 
-## A note on committing
+# Running the Project
 
-Commit as you go — at least four new commits in unit 1, at least four more in
-unit 2. Your commit history is what shows your criteria existed before your
-results did.
+This project is configured for **Path B — Local with logs**. It runs on your machine via the command line (no web server required) and writes a structured run record to disk.
 
-**Do not delete and recreate this repository.** You submit the same URL both
-units.
+## 1. The exact start command
 
-`results/` is deliberately **not** in `.gitignore`. Your run logs are evidence
-that the test actually happened, and they're part of what gets graded.
+From a clean checkout of the repository:
+
+```bash
+# 1. Create and activate a virtual environment
+python3 -m venv .venv
+source .venv/bin/activate  # On Windows use: .venv\Scripts\activate
+
+# 2. Install pinned dependencies
+pip install -r requirements.txt
+
+# 3. Build the search index (required on first run, or whenever the corpus changes)
+python app.py index
+
+# 4. Start the interactive multi-turn chat
+python app.py ask
+Once the interactive prompt (>) appears, type your questions. The system will write a structured log entry to logs/requests.jsonl for every turn. Press Enter on an empty line to quit and see your token usage summary.
+
+2. What the environment needs
+Python version: 3.11+ (tested on 3.11.4)
+
+Dependencies: Pinned in requirements.txt (includes chromadb, rank_bm25, google-genai, etc.).
+
+
+API Key: A GEMINI_API_KEY must be set in a .env file. Copy .env.example to .env and paste your key. (The system will fail with a clear error if this is missing).
+
+3. How to test Multi-turn Memory
+The capability is controlled by an environment variable. By default, memory is ON.
+
+bash
+# To run WITH memory (default)
+python app.py ask
+
+# To run WITHOUT memory (for the "Before" baseline)
+  in terminal, AI201_MEMORY=0 python app.py ask "how to do laundry"
+  Testing a multi-turn conversation
+  Ask a standalone question first: how to do laundry?
+
+  Ask a follow-up using a pronoun: How much does it cost?
+
+  The system should rewrite the follow-up to include "laundry" and find the answer.
