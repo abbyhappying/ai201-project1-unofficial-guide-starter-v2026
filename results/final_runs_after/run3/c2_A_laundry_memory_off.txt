@@ -1,0 +1,42 @@
+$ AI201_CACHE=0 AI201_MEMORY=0 python app.py --corpus campus_life ask
+# stdin:
+Where can I do laundry?
+How much does it cost?
+What about the dryer?
+
+
+# exit code: 0
+
+Ask a question, or press Enter on an empty line to quit.
+
+>   (best distance 0.352, cutoff 0.6)
+
+Based on the provided documents, you can do laundry in the following locations:
+
+* Aldridge Hall (housing_aldridge_hall_laundry.txt)
+* Innisfree Hall (housing_innisfree_hall_laundry.txt)
+* Old Brewhouse (housing_old_brewhouse_laundry.txt)
+* Tamsin Court (housing_tamsin_court_laundry.txt)
+* Fenwick Court (housing_fenwick_court_laundry.txt)
+
+Sources retrieved: housing_aldridge_hall_laundry.txt, housing_fenwick_court_laundry.txt, housing_innisfree_hall_laundry.txt, housing_old_brewhouse_laundry.txt, housing_tamsin_court_laundry.txt
+
+>   (best distance 0.582, cutoff 0.6)
+
+Because your question does not specify what "it" refers to, here are the costs mentioned across the documents:
+
+* **Laundry:** Costs $1.75 to wash and $1.75 to dry at Innisfree Hall, $1.50 to wash and $1.25 to dry at Morrow House, and $2.00 to wash and $1.75 to dry at Calder Annexe (from `housing_innisfree_hall.txt`, `housing_morrow_house.txt`, and `housing_calder_annexe.txt`).
+* **Official transcripts:** Cost $8 (from `admin_transcript_requests.txt`). Unofficial ones are free (from `admin_transcript_requests.txt`).
+
+Sources retrieved: admin_printing_quota.txt, admin_transcript_requests.txt, housing_calder_annexe.txt, housing_innisfree_hall.txt, housing_morrow_house.txt
+
+>   (best distance 0.560, cutoff 0.6)
+
+Based on the documents, there are six dryers for the building in Tamsin Court, which leads to dryers backing up on Sunday evenings. 
+
+Source: housing_tamsin_court_laundry.txt
+
+Sources retrieved: housing_calder_annexe.txt, housing_innisfree_hall.txt, housing_morrow_house.txt, housing_tamsin_court.txt, housing_tamsin_court_laundry.txt
+
+> 3 model calls this session, 1999 tokens (1686 in, 313 out)
+

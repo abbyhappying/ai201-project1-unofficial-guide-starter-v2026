@@ -1,0 +1,51 @@
+$ AI201_CACHE=0 AI201_MEMORY=1 python app.py --corpus campus_life ask
+# stdin:
+Where can I do laundry?
+How much does it cost?
+What about the dryer?
+Where is the gym?
+
+
+# exit code: 0
+
+Ask a question, or press Enter on an empty line to quit.
+Memory is on: follow-up questions can refer to earlier ones.
+
+>   (best distance 0.352, cutoff 0.6)
+
+You can do laundry in the following locations based on the provided documents:
+- Aldridge Hall (*housing_aldridge_hall_laundry.txt*)
+- Innisfree Hall (*housing_innisfree_hall_laundry.txt*)
+- Old Brewhouse (*housing_old_brewhouse_laundry.txt*)
+- Tamsin Court (*housing_tamsin_court_laundry.txt*)
+- Fenwick Court (*housing_fenwick_court_laundry.txt*)
+
+Sources retrieved: housing_aldridge_hall_laundry.txt, housing_fenwick_court_laundry.txt, housing_innisfree_hall_laundry.txt, housing_old_brewhouse_laundry.txt, housing_tamsin_court_laundry.txt
+
+>   (best distance 0.303, cutoff 0.6)
+  (searched as: How much does it cost to do laundry in these locations?)
+
+Based on the provided documents:
+
+* **Innisfree Hall:** $1.75 to wash and $1.75 to dry (*housing_innisfree_hall.txt* and *housing_innisfree_hall_laundry.txt*).
+* **Calder Annexe:** $2.00 to wash and $1.75 to dry (*housing_calder_annexe_laundry.txt*).
+* **Aldridge Hall:** $1.75 to wash and $1.50 to dry (*housing_aldridge_hall_laundry.txt*).
+* **Old Brewhouse:** $1.50 to wash and $1.50 to dry (*housing_old_brewhouse_laundry.txt*).
+
+Sources retrieved: housing_aldridge_hall_laundry.txt, housing_calder_annexe_laundry.txt, housing_innisfree_hall.txt, housing_innisfree_hall_laundry.txt, housing_old_brewhouse_laundry.txt
+
+>   (best distance 0.320, cutoff 0.6)
+  (searched as: How much does it cost to use the dryer at the Old Brewhouse?)
+
+It costs $1.50 to use the dryer at the Old Brewhouse. 
+
+Sources: `housing_old_brewhouse.txt` and `housing_old_brewhouse_laundry.txt`
+
+Sources retrieved: housing_innisfree_hall.txt, housing_old_brewhouse.txt, housing_old_brewhouse_laundry.txt, housing_old_brewhouse_noise.txt
+
+>   (best distance 0.713, cutoff 0.6)
+
+I don't have enough information about that.
+
+> 6 model calls this session, 2783 tokens (2424 in, 359 out)
+

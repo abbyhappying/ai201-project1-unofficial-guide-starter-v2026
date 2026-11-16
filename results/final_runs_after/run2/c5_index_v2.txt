@@ -1,0 +1,11 @@
+$ AI201_CACHE=0 AI201_MEMORY=1 python app.py --corpus campus_life --variant v2 index
+# exit code: 0
+
+Corpus: campus_life
+  loaded   88 documents, 27,908 characters, ~317 characters per document
+  chunked  91 chunks, 307 characters on average (shortest 159, longest 430), produced by chunker.py::split_documents
+  embedding 91 chunks (first run downloads the model)...
+  stored   91 chunks in 5.4s
+
+Ready. Try: python app.py ask "your question here"
+

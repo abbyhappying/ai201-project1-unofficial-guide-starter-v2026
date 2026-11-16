@@ -1,0 +1,443 @@
+{
+  "final_runs": {
+    "1": [
+      {
+        "chain": "A_laundry",
+        "pass": false,
+        "off": {
+          "status": "ok",
+          "dist": 0.5819,
+          "topics": [
+            "housing non-laundry",
+            "printing",
+            "transcripts"
+          ],
+          "ok": true
+        },
+        "on": {
+          "status": "ok",
+          "dist": 0.3272,
+          "cited": [
+            "housing_aldridge_hall_laundry.txt",
+            "housing_fenwick_court_laundry.txt",
+            "housing_innisfree_hall.txt",
+            "housing_old_brewhouse.txt",
+            "housing_old_brewhouse_laundry.txt"
+          ],
+          "ok": false,
+          "bad_sources": [
+            "housing_innisfree_hall.txt",
+            "housing_old_brewhouse.txt"
+          ]
+        }
+      },
+      {
+        "chain": "B_drop",
+        "pass": true,
+        "off": {
+          "status": "refused",
+          "dist": 0.814,
+          "topics": [],
+          "ok": true
+        },
+        "on": {
+          "status": "ok",
+          "dist": 0.4945,
+          "cited": [
+            "admin_add_drop_deadline.txt"
+          ],
+          "ok": true,
+          "bad_sources": []
+        }
+      },
+      {
+        "chain": "C_printing",
+        "pass": true,
+        "off": {
+          "status": "ok",
+          "dist": 0.5819,
+          "topics": [
+            "housing non-laundry",
+            "printing",
+            "transcripts"
+          ],
+          "ok": true
+        },
+        "on": {
+          "status": "ok",
+          "dist": 0.2547,
+          "cited": [
+            "admin_printing_quota.txt"
+          ],
+          "ok": true,
+          "bad_sources": []
+        }
+      }
+    ],
+    "2": [
+      {
+        "chain": "A_laundry",
+        "pass": false,
+        "off": {
+          "status": "ok",
+          "dist": 0.5819,
+          "topics": [
+            "housing non-laundry",
+            "printing",
+            "transcripts"
+          ],
+          "ok": true
+        },
+        "on": {
+          "status": "ok",
+          "dist": 0.3272,
+          "cited": [
+            "housing_aldridge_hall_laundry.txt",
+            "housing_fenwick_court_laundry.txt",
+            "housing_innisfree_hall.txt",
+            "housing_old_brewhouse.txt",
+            "housing_old_brewhouse_laundry.txt"
+          ],
+          "ok": false,
+          "bad_sources": [
+            "housing_innisfree_hall.txt",
+            "housing_old_brewhouse.txt"
+          ]
+        }
+      },
+      {
+        "chain": "B_drop",
+        "pass": true,
+        "off": {
+          "status": "refused",
+          "dist": 0.814,
+          "topics": [],
+          "ok": true
+        },
+        "on": {
+          "status": "ok",
+          "dist": 0.3265,
+          "cited": [
+            "admin_add_drop_deadline.txt"
+          ],
+          "ok": true,
+          "bad_sources": []
+        }
+      },
+      {
+        "chain": "C_printing",
+        "pass": true,
+        "off": {
+          "status": "ok",
+          "dist": 0.5819,
+          "topics": [
+            "housing non-laundry",
+            "printing",
+            "transcripts"
+          ],
+          "ok": true
+        },
+        "on": {
+          "status": "ok",
+          "dist": 0.2547,
+          "cited": [
+            "admin_printing_quota.txt"
+          ],
+          "ok": true,
+          "bad_sources": []
+        }
+      }
+    ],
+    "3": [
+      {
+        "chain": "A_laundry",
+        "pass": false,
+        "off": {
+          "status": "ok",
+          "dist": 0.5819,
+          "topics": [
+            "housing non-laundry",
+            "printing",
+            "transcripts"
+          ],
+          "ok": true
+        },
+        "on": {
+          "status": "ok",
+          "dist": 0.3272,
+          "cited": [
+            "housing_aldridge_hall_laundry.txt",
+            "housing_fenwick_court_laundry.txt",
+            "housing_innisfree_hall.txt",
+            "housing_old_brewhouse.txt",
+            "housing_old_brewhouse_laundry.txt"
+          ],
+          "ok": false,
+          "bad_sources": [
+            "housing_innisfree_hall.txt",
+            "housing_old_brewhouse.txt"
+          ]
+        }
+      },
+      {
+        "chain": "B_drop",
+        "pass": true,
+        "off": {
+          "status": "refused",
+          "dist": 0.814,
+          "topics": [],
+          "ok": true
+        },
+        "on": {
+          "status": "ok",
+          "dist": 0.4123,
+          "cited": [
+            "admin_add_drop_deadline.txt"
+          ],
+          "ok": true,
+          "bad_sources": []
+        }
+      },
+      {
+        "chain": "C_printing",
+        "pass": false,
+        "off": {
+          "status": "ok",
+          "dist": 0.5819,
+          "topics": [],
+          "ok": false
+        },
+        "on": {
+          "status": "ok",
+          "dist": 0.2547,
+          "cited": [
+            "admin_printing_quota.txt"
+          ],
+          "ok": true,
+          "bad_sources": []
+        }
+      }
+    ]
+  },
+  "final_runs_after": {
+    "1": [
+      {
+        "chain": "A_laundry",
+        "pass": false,
+        "off": {
+          "status": "ok",
+          "dist": 0.5819,
+          "topics": [
+            "housing non-laundry",
+            "printing",
+            "transcripts"
+          ],
+          "ok": true
+        },
+        "on": {
+          "status": "ok",
+          "dist": 0.3035,
+          "cited": [
+            "housing_aldridge_hall_laundry.txt",
+            "housing_calder_annexe_laundry.txt",
+            "housing_innisfree_hall.txt",
+            "housing_innisfree_hall_laundry.txt",
+            "housing_old_brewhouse_laundry.txt"
+          ],
+          "ok": false,
+          "bad_sources": [
+            "housing_innisfree_hall.txt"
+          ]
+        }
+      },
+      {
+        "chain": "B_drop",
+        "pass": true,
+        "off": {
+          "status": "refused",
+          "dist": 0.814,
+          "topics": [],
+          "ok": true
+        },
+        "on": {
+          "status": "ok",
+          "dist": 0.3942,
+          "cited": [
+            "admin_add_drop_deadline.txt"
+          ],
+          "ok": true,
+          "bad_sources": []
+        }
+      },
+      {
+        "chain": "C_printing",
+        "pass": true,
+        "off": {
+          "status": "ok",
+          "dist": 0.5819,
+          "topics": [
+            "housing non-laundry",
+            "printing",
+            "transcripts"
+          ],
+          "ok": true
+        },
+        "on": {
+          "status": "ok",
+          "dist": 0.3293,
+          "cited": [
+            "admin_printing_quota.txt"
+          ],
+          "ok": true,
+          "bad_sources": []
+        }
+      }
+    ],
+    "2": [
+      {
+        "chain": "A_laundry",
+        "pass": false,
+        "off": {
+          "status": "ok",
+          "dist": 0.5819,
+          "topics": [
+            "housing non-laundry",
+            "transcripts"
+          ],
+          "ok": true
+        },
+        "on": {
+          "status": "ok",
+          "dist": 0.3025,
+          "cited": [
+            "housing_aldridge_hall_laundry.txt",
+            "housing_innisfree_hall.txt",
+            "housing_innisfree_hall_laundry.txt",
+            "housing_old_brewhouse.txt",
+            "housing_old_brewhouse_laundry.txt"
+          ],
+          "ok": false,
+          "bad_sources": [
+            "housing_innisfree_hall.txt",
+            "housing_old_brewhouse.txt"
+          ]
+        }
+      },
+      {
+        "chain": "B_drop",
+        "pass": true,
+        "off": {
+          "status": "refused",
+          "dist": 0.814,
+          "topics": [],
+          "ok": true
+        },
+        "on": {
+          "status": "ok",
+          "dist": 0.4123,
+          "cited": [
+            "admin_add_drop_deadline.txt"
+          ],
+          "ok": true,
+          "bad_sources": []
+        }
+      },
+      {
+        "chain": "C_printing",
+        "pass": true,
+        "off": {
+          "status": "ok",
+          "dist": 0.5819,
+          "topics": [
+            "housing non-laundry",
+            "printing",
+            "transcripts"
+          ],
+          "ok": true
+        },
+        "on": {
+          "status": "ok",
+          "dist": 0.3293,
+          "cited": [
+            "admin_printing_quota.txt"
+          ],
+          "ok": true,
+          "bad_sources": []
+        }
+      }
+    ],
+    "3": [
+      {
+        "chain": "A_laundry",
+        "pass": false,
+        "off": {
+          "status": "ok",
+          "dist": 0.5819,
+          "topics": [
+            "housing non-laundry",
+            "transcripts"
+          ],
+          "ok": true
+        },
+        "on": {
+          "status": "ok",
+          "dist": 0.3025,
+          "cited": [
+            "housing_aldridge_hall_laundry.txt",
+            "housing_innisfree_hall.txt",
+            "housing_innisfree_hall_laundry.txt",
+            "housing_old_brewhouse.txt",
+            "housing_old_brewhouse_laundry.txt"
+          ],
+          "ok": false,
+          "bad_sources": [
+            "housing_innisfree_hall.txt",
+            "housing_old_brewhouse.txt"
+          ]
+        }
+      },
+      {
+        "chain": "B_drop",
+        "pass": true,
+        "off": {
+          "status": "refused",
+          "dist": 0.814,
+          "topics": [],
+          "ok": true
+        },
+        "on": {
+          "status": "ok",
+          "dist": 0.3265,
+          "cited": [
+            "admin_add_drop_deadline.txt"
+          ],
+          "ok": true,
+          "bad_sources": []
+        }
+      },
+      {
+        "chain": "C_printing",
+        "pass": true,
+        "off": {
+          "status": "ok",
+          "dist": 0.5819,
+          "topics": [
+            "housing non-laundry",
+            "printing",
+            "transcripts"
+          ],
+          "ok": true
+        },
+        "on": {
+          "status": "ok",
+          "dist": 0.3293,
+          "cited": [
+            "admin_printing_quota.txt"
+          ],
+          "ok": true,
+          "bad_sources": []
+        }
+      }
+    ]
+  }
+}

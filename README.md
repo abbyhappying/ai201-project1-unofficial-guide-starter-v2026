@@ -956,3 +956,105 @@ An ask against the `v2` index from my terminal, line 274. `settings.variant` is
 ```jsonl
 {"schema": 1, "ts": "2026-11-16T04:28:33.653+00:00", "run_id": "66b1647965da", "session_id": "4f301b6f0fec", "turn": 1, "source": "cli", "status": "ok", "input": {"question": "Where can I do laundry?", "standalone_question": "Where can I do laundry?", "rewritten": false, "history_turns": 0}, "output": {"answer": "Based on the provided documents, you can do laundry in the following locations:\n- Aldridge Hall (*housing_aldridge_hall_laundry.txt*)\n- Innisfree Hall (*housing_innisfree_hall_laundry.txt*)\n- Old Brewhouse (*housing_old_brewhouse_laundry.txt*)\n- Tamsin Court (*housing_tamsin_court_laundry.txt*)\n- Fenwick Court (*housing_fenwick_court_laundry.txt*)", "sources": ["housing_aldridge_hall_laundry.txt", "housing_fenwick_court_laundry.txt", "housing_innisfree_hall_laundry.txt", "housing_old_brewhouse_laundry.txt", "housing_tamsin_court_laundry.txt"]}, "duration_ms": {"total": 802, "rewrite": 0, "retrieve": 801, "generate": 1}, "retrieval": {"best_distance": 0.3521, "threshold": 0.6, "results": [{"source": "housing_aldridge_hall_laundry.txt", "distance": 0.4128}, {"source": "housing_innisfree_hall_laundry.txt", "distance": 0.3977}, {"source": "housing_old_brewhouse_laundry.txt", "distance": 0.3521}, {"source": "housing_tamsin_court_laundry.txt", "distance": 0.4502}, {"source": "housing_fenwick_court_laundry.txt", "distance": 0.4287}]}, "usage": {"model_calls": 0, "cache_hits": 1, "tokens": {"prompt": 0, "output": 0, "total": 0}, "tokens_by_stage": {"rewrite": {"prompt": 0, "output": 0, "total": 0}, "generate": {"prompt": 0, "output": 0, "total": 0}}, "est_cost_usd": 0.0}, "settings": {"corpus": "campus_life", "variant": "v2", "model": "gemini-3.5-flash-lite", "embedding_model": "all-MiniLM-L6-v2", "top_k": 5, "hybrid": true, "memory": false, "cache": true, "price_input_per_m": 0.0, "price_output_per_m": 0.0}}
 ```
+
+### A note on changing a criterion
+
+Criterion 2's target was broken, not merely missed.
+
+**Original target:** "3/3 chains: turn 2 without memory refused or ≥2 topics;
+with memory answered, 1 topic, **every cited source `housing_*`**."
+
+**Why it could not be measured:**
+- The criterion is evaluated on three chains: laundry, drop deadline, and
+  printing quota.
+- The drop chain's correct answer cites `admin_add_drop_deadline.txt`.
+- The printing chain's correct answer cites `admin_printing_quota.txt`.
+- Neither of these documents is a `housing_*` file, and neither *should* be.
+- So the target asks for something that is *correct behaviour* on two of the
+  three chains to be counted as a failure. A target that fails the system for
+  doing the right thing is not measuring "correctly-sourced"; it is measuring
+  "sourced from housing", which is not what Criterion 2 says it tests.
+
+The failure was not in the system. In every run, memory turned the drop and
+printing follow-ups from a refusal or a scattered list into a focused answer
+that cited the document the topic actually lives in. The failure was in the
+wording of the target: it translated "correctly-sourced" into "housing", and
+only one of the three chains is about housing.
+
+**Revised target:** "3/3 chains: turn 2 without memory refused or ≥2 topics;
+with memory answered, 1 topic, **and every cited source matches the chain's
+topic** (laundry → `housing_*laundry*`, drop → `admin_*drop*`, printing →
+`admin_*printing*`)."
+
+**Why the revised target is measurable:** every chain now has a source pattern
+that can be checked from `output.sources` in `logs/requests.jsonl`. The verdict
+for the drop chain is `all sources match admin_*drop*`, for printing
+`all sources match admin_*printing*`, for laundry `all sources match
+housing_*laundry*`. The target still fails a scattered answer (which cites
+multiple topics) and a refused answer (which cites nothing), so it has not been
+weakened — it has been corrected.
+
+### Before and after: the full set re-run against the revised target
+
+**Before** is the three trials above (`results/final_runs/`). **After** is a
+fresh set of three trials of all five criteria, run the same way after the
+criterion 2 revision (`results/final_runs_after/`, same steps, same pacing,
+`AI201_CACHE=0`, all 63 steps exited 0). No code changed between the two sets;
+only the criterion 2 target did. Criterion 2 is scored with the **revised**
+target in both columns, so the two sets are compared by the same rule. The
+original target's score is shown for reference. Scorer:
+`results/score_c2_revised.py`, output in `results/c2_revised_scores.json`.
+
+| Criterion | Target | Before: run 1 · 2 · 3 | Before verdict | After: run 1 · 2 · 3 | After verdict |
+|---|---|---|---|---|---|
+| 1. Follow-ups name the subject | 2/2 | 2/2 · 2/2 · 2/2 | **MET** | 2/2 · 2/2 · 2/2 | **MET** |
+| 2. Focused, correctly-sourced follow-up (revised target) | 3/3 chains | 2/3 · 2/3 · 1/3 | **MISSED** | 2/3 · 2/3 · 2/3 | **MISSED** |
+| 2. *(original `housing_*` target, for reference)* | 3/3 chains | 1/3 · 1/3 · 1/3 | MISSED | 1/3 · 1/3 · 1/3 | MISSED |
+| 3. Refusals cheap and logged once | 5/5 | 5/5 · 5/5 · 5/5 | **MET** | 5/5 · 5/5 · 5/5 | **MET** |
+| 4. Cost measured and reproducible | 10/10, spread < 10% | spread 1.6% · 2.3% · 4.3% | **MET** | spread 1.6% · 3.0% · 1.6% | **MET** |
+| 5. Variant index auditable | `v2` logged, real `produced_by` | pass · pass · pass | **MET** | pass · pass · pass | **MET** |
+
+**Criterion 2, chain by chain (revised target):**
+
+| Chain | Before: run 1 · 2 · 3 | After: run 1 · 2 · 3 | What decided it |
+|---|---|---|---|
+| Laundry | fail · fail · fail | fail · fail · fail | Memory on answers with laundry prices only, but also cites `housing_innisfree_hall.txt` and `housing_old_brewhouse.txt`, which don't match `housing_*laundry*`. Both files really do hold laundry prices ("Laundry costs $1.75 wash, $1.75 dry, app-based"; "Laundry costs $1.50 wash, $1.50 dry, coin only"), so the answer is correct and the pattern rejects it. |
+| Drop deadline | pass · pass · pass | pass · pass · pass | Off: refused (0.814). On: "through the end of the second week", cites only `admin_add_drop_deadline.txt`. |
+| Printing | pass · pass · **fail** | pass · pass · pass | On: cites only `admin_printing_quota.txt` in every run. Before run 3 failed on the memory-off side: answered at 0.5819 with "you have not specified what 'it' refers to", which is neither refused nor ≥2 topics. That didn't recur in the after set. |
+
+**Criterion 1, after set.** The rewrites changed wording between the two sets
+(same code, a different model sample each time). Every follow-up still names
+laundry or the dryer, so it's 2/2 in every run (checked by hand, same as before):
+
+- Run 1: `How much does it cost to do laundry in these locations?` · `How much does it cost to use the dryer at the Old Brewhouse?`
+- Run 2: `How much does it cost to do laundry in the residence halls?` · `What does it cost to use the dryer in the residence halls?`
+- Run 3: `How much does it cost to do laundry in the residence halls?` · `How much does it cost to use the dryer in the residence halls?`
+
+Run 1's dryer rewrite narrowed a general question to one building (Old
+Brewhouse) because the previous answer ended on it. That passes criterion 1 as
+written, but it's a wrong rewrite, and the criterion doesn't catch it.
+
+**Criteria 3–5, after set:** refusals 488–1209 ms against answered warm-ups of
+2628 / 5145 / 2438 ms, one record and 1 model call each. Mean tokens
+682.0 / 677.1 / 682.9. `v2` logged with `chunker.py::split_documents` in all three.
+
+### Did the revision help?
+
+**Partly, and criterion 2 is still MISSED.** Under the revised target it
+scores 2/3 in every after run (up from 1/3 under the original target), but the
+target needs 3/3.
+
+- **What it fixed:** the drop-deadline and printing chains. Their correct
+  `admin_*` sources now count as correct instead of failing.
+- **What it broke:** the laundry chain, which passed under the original target
+  and now fails in all six runs. The revision traded one wrong source rule for
+  another. Laundry information isn't only in `*_laundry` files: the main hall
+  pages carry the prices too, and the model correctly cites them.
+- **The re-run itself changed nothing.** The system's behaviour is the same in
+  both sets. The only difference in score is before run 3's printing miss,
+  which is run-to-run variation, not an improvement.
+- **The written check doesn't match the target.** The "Why the revised target
+  is measurable" paragraph says the check reads `output.sources`. That field
+  lists all five retrieved chunks, not the files the answer cites, and checked
+  that way every chain fails in every run (0/3). These scores use the files
+  named in the answer, which is what "every cited source" says.

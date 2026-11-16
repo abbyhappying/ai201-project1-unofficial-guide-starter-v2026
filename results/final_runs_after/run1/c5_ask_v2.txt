@@ -1,0 +1,16 @@
+$ AI201_CACHE=0 AI201_MEMORY=0 python app.py --corpus campus_life --variant v2 ask Where can I do laundry?
+# exit code: 0
+
+  (best distance 0.352, cutoff 0.6)
+
+Based on the provided documents, you can do laundry in the following locations:
+- Aldridge Hall (*housing_aldridge_hall_laundry.txt*)
+- Innisfree Hall (*housing_innisfree_hall_laundry.txt*)
+- Old Brewhouse (*housing_old_brewhouse_laundry.txt*)
+- Tamsin Court (*housing_tamsin_court_laundry.txt*)
+- Fenwick Court (*housing_fenwick_court_laundry.txt*)
+
+Sources retrieved: housing_aldridge_hall_laundry.txt, housing_fenwick_court_laundry.txt, housing_innisfree_hall_laundry.txt, housing_old_brewhouse_laundry.txt, housing_tamsin_court_laundry.txt
+
+1 model calls this session, 681 tokens (570 in, 111 out)
+

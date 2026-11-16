@@ -1,0 +1,35 @@
+$ AI201_CACHE=0 AI201_MEMORY=0 python app.py --corpus campus_life ask
+# stdin:
+How does the printing quota work?
+How much does it cost?
+What happens if I run out?
+
+
+# exit code: 0
+
+Ask a question, or press Enter on an empty line to quit.
+
+>   (best distance 0.482, cutoff 0.6)
+
+Every student receives $30 of printing per semester (roughly 600 black-and-white pages), which does not roll over. Additionally, colour printing costs eight times as much per page. 
+
+Source: `admin_printing_quota.txt`
+
+Sources retrieved: admin_printing_quota.txt, admin_wifi_and_accounts.txt, course_cs_340_workload.txt, housing_fenwick_court_noise.txt, money_textbooks.txt
+
+>   (best distance 0.582, cutoff 0.6)
+
+Based on the provided documents, the cost depends on the specific item or service:
+
+* **Laundry:** Costs vary by building. At Innisfree Hall, it is $1.75 for a wash and $1.75 for a dry (*housing_innisfree_hall.txt*). At Morrow House, it is $1.50 for a wash and $1.25 for a dry (*housing_morrow_house.txt*). At Calder Annexe, it is $2.00 for a wash and $1.75 for a dry (*housing_calder_annexe.txt*).
+* **Printing:** Every student gets $30 of printing per semester, with colour costing eight times as much per page as black-and-white (*admin_printing_quota.txt*).
+* **Transcripts:** Official transcripts cost $8, while unofficial ones are free (*admin_transcript_requests.txt*).
+
+Sources retrieved: admin_printing_quota.txt, admin_transcript_requests.txt, housing_calder_annexe.txt, housing_innisfree_hall.txt, housing_morrow_house.txt
+
+>   (best distance 0.820, cutoff 0.6)
+
+I don't have enough information about that.
+
+> 2 model calls this session, 1269 tokens (1015 in, 254 out)
+

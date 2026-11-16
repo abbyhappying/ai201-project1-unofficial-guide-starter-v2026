@@ -1,0 +1,43 @@
+$ AI201_CACHE=0 AI201_MEMORY=1 python app.py --corpus campus_life ask
+# stdin:
+How does the printing quota work?
+How much does it cost?
+What happens if I run out?
+Where is the gym?
+
+
+# exit code: 0
+
+Ask a question, or press Enter on an empty line to quit.
+Memory is on: follow-up questions can refer to earlier ones.
+
+>   (best distance 0.482, cutoff 0.6)
+
+Every student receives $30 of printing per semester (roughly 600 black-and-white pages), which does not roll over. Colour printing costs eight times as much per page. 
+
+Source: `admin_printing_quota.txt`
+
+Sources retrieved: admin_printing_quota.txt, admin_wifi_and_accounts.txt, course_cs_340_workload.txt, housing_fenwick_court_noise.txt, money_textbooks.txt
+
+>   (best distance 0.329, cutoff 0.6)
+  (searched as: How much does colour printing cost?)
+
+Colour printing costs eight times as much per page as black-and-white printing. (Source: admin_printing_quota.txt)
+
+Sources retrieved: admin_dining_dollars.txt, admin_printing_quota.txt, admin_transcript_requests.txt, dining_verrill_street_grill.txt, housing_innisfree_hall.txt
+
+>   (best distance 0.397, cutoff 0.6)
+  (searched as: What happens if I run out of my student printing quota?)
+
+Based on the provided documents, there is no mention of what happens if you run out of your student printing quota. 
+
+Source: admin_printing_quota.txt, admin_wifi_and_accounts.txt
+
+Sources retrieved: admin_add_drop_deadline.txt, admin_meal_plan_changes.txt, admin_printing_quota.txt, admin_wifi_and_accounts.txt, course_math_220.txt
+
+>   (best distance 0.713, cutoff 0.6)
+
+I don't have enough information about that.
+
+> 6 model calls this session, 2297 tokens (2149 in, 148 out)
+

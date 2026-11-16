@@ -1,0 +1,45 @@
+$ AI201_CACHE=0 AI201_MEMORY=1 python app.py --corpus campus_life ask
+# stdin:
+What's the class drop deadline?
+What about adding one?
+Does it show on my transcript?
+Where is the gym?
+
+
+# exit code: 0
+
+Ask a question, or press Enter on an empty line to quit.
+Memory is on: follow-up questions can refer to earlier ones.
+
+>   (best distance 0.316, cutoff 0.6)
+
+Dropping a course has a window through the end of week six. 
+
+Source: `admin_add_drop_deadline.txt` (and also mentioned in `admin_withdrawal_deadline.txt`)
+
+Sources retrieved: admin_add_drop_deadline.txt, admin_withdrawal_deadline.txt, course_econ_101_workload.txt, course_stat_150.txt, course_stat_150_workload.txt
+
+>   (best distance 0.326, cutoff 0.6)
+  (searched as: What is the deadline for adding a course?)
+
+You can add a course through the end of the second week. 
+
+Source: admin_add_drop_deadline.txt
+
+Sources retrieved: admin_add_drop_deadline.txt, admin_pass_fail_option.txt, admin_withdrawal_deadline.txt, course_biol_160_workload.txt, course_math_220.txt
+
+>   (best distance 0.287, cutoff 0.6)
+  (searched as: Does dropping a course show on my transcript?)
+
+Yes, dropping a course shows as a W on your transcript if it is done after week two. 
+
+Source: `admin_add_drop_deadline.txt`
+
+Sources retrieved: admin_add_drop_deadline.txt, admin_grade_appeals.txt, admin_pass_fail_option.txt, admin_transcript_requests.txt, admin_withdrawal_deadline.txt
+
+>   (best distance 0.713, cutoff 0.6)
+
+I don't have enough information about that.
+
+> 6 model calls this session, 2335 tokens (2208 in, 127 out)
+

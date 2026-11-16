@@ -1,0 +1,428 @@
+{
+  "1": {
+    "c1": {
+      "pass": 0,
+      "of": 2,
+      "rows": [
+        [
+          "How much does it cost?",
+          "How much does it cost to do laundry in these locations?",
+          false
+        ],
+        [
+          "What about the dryer?",
+          "How much does it cost to use the dryer at the Old Brewhouse?",
+          false
+        ]
+      ]
+    },
+    "c2": {
+      "A": [
+        [
+          "A_laundry",
+          "ok",
+          false,
+          "ok",
+          true,
+          true
+        ],
+        [
+          "B_drop",
+          "refused",
+          false,
+          "ok",
+          true,
+          true
+        ],
+        [
+          "C_printing",
+          "ok",
+          true,
+          "ok",
+          true,
+          false
+        ]
+      ],
+      "A_pass": 2,
+      "B": [
+        [
+          "A_laundry",
+          "Where is the gym?",
+          true,
+          "refused",
+          false
+        ],
+        [
+          "B_drop",
+          "Where is the gym?",
+          true,
+          "refused",
+          false
+        ],
+        [
+          "C_printing",
+          "Where is the gym?",
+          true,
+          "refused",
+          false
+        ]
+      ],
+      "B_unchanged": 3,
+      "B_gym_doc": 0
+    },
+    "c3": {
+      "pass": 5,
+      "of": 5,
+      "median_answered_ms": 2628,
+      "answered_runs": 1,
+      "rows": [
+        [
+          "What is the capital of Mongolia?",
+          1,
+          "refused",
+          1,
+          567,
+          true
+        ],
+        [
+          "How do I change the oil in a diesel engine?",
+          1,
+          "refused",
+          1,
+          714,
+          true
+        ],
+        [
+          "Who won the 1994 World Cup?",
+          1,
+          "refused",
+          1,
+          1154,
+          true
+        ],
+        [
+          "What is the recommended dosage of ibuprofen for a headache?",
+          1,
+          "refused",
+          1,
+          577,
+          true
+        ],
+        [
+          "How do I write a for loop in Rust?",
+          1,
+          "refused",
+          1,
+          717,
+          true
+        ]
+      ]
+    },
+    "c4": {
+      "nonzero": 10,
+      "cost_formula_ok": true,
+      "tokens_mean": 682,
+      "tokens_min": 680,
+      "tokens_max": 691,
+      "spread_pct": 1.61,
+      "prompt_mean": 570,
+      "output_mean": 112,
+      "ms_mean": 2747.2,
+      "memory": true,
+      "pass": true
+    },
+    "c5": {
+      "variant_logged": "v2",
+      "produced_by": [
+        "chunker.py::split_documents"
+      ],
+      "chunks_seen": 2,
+      "index_exit0": true,
+      "pass": true
+    }
+  },
+  "2": {
+    "c1": {
+      "pass": 0,
+      "of": 2,
+      "rows": [
+        [
+          "How much does it cost?",
+          "How much does it cost to do laundry in the residence halls?",
+          false
+        ],
+        [
+          "What about the dryer?",
+          "What does it cost to use the dryer in the residence halls?",
+          false
+        ]
+      ]
+    },
+    "c2": {
+      "A": [
+        [
+          "A_laundry",
+          "ok",
+          false,
+          "ok",
+          true,
+          true
+        ],
+        [
+          "B_drop",
+          "refused",
+          false,
+          "ok",
+          true,
+          true
+        ],
+        [
+          "C_printing",
+          "ok",
+          true,
+          "ok",
+          true,
+          false
+        ]
+      ],
+      "A_pass": 2,
+      "B": [
+        [
+          "A_laundry",
+          "Where is the gym?",
+          true,
+          "refused",
+          false
+        ],
+        [
+          "B_drop",
+          "Where is the gym?",
+          true,
+          "refused",
+          false
+        ],
+        [
+          "C_printing",
+          "Where is the gym?",
+          true,
+          "refused",
+          false
+        ]
+      ],
+      "B_unchanged": 3,
+      "B_gym_doc": 0
+    },
+    "c3": {
+      "pass": 5,
+      "of": 5,
+      "median_answered_ms": 5145,
+      "answered_runs": 1,
+      "rows": [
+        [
+          "What is the capital of Mongolia?",
+          1,
+          "refused",
+          1,
+          1209,
+          true
+        ],
+        [
+          "How do I change the oil in a diesel engine?",
+          1,
+          "refused",
+          1,
+          682,
+          true
+        ],
+        [
+          "Who won the 1994 World Cup?",
+          1,
+          "refused",
+          1,
+          597,
+          true
+        ],
+        [
+          "What is the recommended dosage of ibuprofen for a headache?",
+          1,
+          "refused",
+          1,
+          945,
+          true
+        ],
+        [
+          "How do I write a for loop in Rust?",
+          1,
+          "refused",
+          1,
+          488,
+          true
+        ]
+      ]
+    },
+    "c4": {
+      "nonzero": 10,
+      "cost_formula_ok": true,
+      "tokens_mean": 677.1,
+      "tokens_min": 662,
+      "tokens_max": 682,
+      "spread_pct": 2.95,
+      "prompt_mean": 570,
+      "output_mean": 107.1,
+      "ms_mean": 2841.2,
+      "memory": true,
+      "pass": true
+    },
+    "c5": {
+      "variant_logged": "v2",
+      "produced_by": [
+        "chunker.py::split_documents"
+      ],
+      "chunks_seen": 2,
+      "index_exit0": true,
+      "pass": true
+    }
+  },
+  "3": {
+    "c1": {
+      "pass": 0,
+      "of": 2,
+      "rows": [
+        [
+          "How much does it cost?",
+          "How much does it cost to do laundry in the residence halls?",
+          false
+        ],
+        [
+          "What about the dryer?",
+          "How much does it cost to use the dryer in the residence halls?",
+          false
+        ]
+      ]
+    },
+    "c2": {
+      "A": [
+        [
+          "A_laundry",
+          "ok",
+          false,
+          "ok",
+          true,
+          true
+        ],
+        [
+          "B_drop",
+          "refused",
+          false,
+          "ok",
+          true,
+          true
+        ],
+        [
+          "C_printing",
+          "ok",
+          true,
+          "ok",
+          true,
+          false
+        ]
+      ],
+      "A_pass": 2,
+      "B": [
+        [
+          "A_laundry",
+          "Where is the gym?",
+          true,
+          "refused",
+          false
+        ],
+        [
+          "B_drop",
+          "Where is the gym?",
+          true,
+          "refused",
+          false
+        ],
+        [
+          "C_printing",
+          "Where is the gym?",
+          true,
+          "refused",
+          false
+        ]
+      ],
+      "B_unchanged": 3,
+      "B_gym_doc": 0
+    },
+    "c3": {
+      "pass": 5,
+      "of": 5,
+      "median_answered_ms": 2438,
+      "answered_runs": 1,
+      "rows": [
+        [
+          "What is the capital of Mongolia?",
+          1,
+          "refused",
+          1,
+          582,
+          true
+        ],
+        [
+          "How do I change the oil in a diesel engine?",
+          1,
+          "refused",
+          1,
+          509,
+          true
+        ],
+        [
+          "Who won the 1994 World Cup?",
+          1,
+          "refused",
+          1,
+          582,
+          true
+        ],
+        [
+          "What is the recommended dosage of ibuprofen for a headache?",
+          1,
+          "refused",
+          1,
+          634,
+          true
+        ],
+        [
+          "How do I write a for loop in Rust?",
+          1,
+          "refused",
+          1,
+          578,
+          true
+        ]
+      ]
+    },
+    "c4": {
+      "nonzero": 10,
+      "cost_formula_ok": true,
+      "tokens_mean": 682.9,
+      "tokens_min": 680,
+      "tokens_max": 691,
+      "spread_pct": 1.61,
+      "prompt_mean": 570,
+      "output_mean": 112.9,
+      "ms_mean": 2724.3,
+      "memory": true,
+      "pass": true
+    },
+    "c5": {
+      "variant_logged": "v2",
+      "produced_by": [
+        "chunker.py::split_documents"
+      ],
+      "chunks_seen": 2,
+      "index_exit0": true,
+      "pass": true
+    }
+  }
+}
