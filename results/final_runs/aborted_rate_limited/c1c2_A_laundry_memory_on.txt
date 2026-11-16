@@ -1,0 +1,56 @@
+$ AI201_CACHE=0 AI201_MEMORY=1 python app.py --corpus campus_life ask
+# stdin:
+Where can I do laundry?
+How much does it cost?
+What about the dryer?
+Where is the gym?
+
+
+# exit code: 0
+
+Ask a question, or press Enter on an empty line to quit.
+Memory is on: follow-up questions can refer to earlier ones.
+
+>   (best distance 0.352, cutoff 0.6)
+
+You can do laundry in the following locations, as stated in their respective documents:
+* Aldridge Hall (`housing_aldridge_hall_laundry.txt`)
+* Innisfree Hall (`housing_innisfree_hall_laundry.txt`)
+* Old Brewhouse (`housing_old_brewhouse_laundry.txt`)
+* Tamsin Court (`housing_tamsin_court_laundry.txt`)
+* Fenwick Court (`housing_fenwick_court_laundry.txt`)
+
+Sources retrieved: housing_aldridge_hall_laundry.txt, housing_fenwick_court_laundry.txt, housing_innisfree_hall_laundry.txt, housing_old_brewhouse_laundry.txt, housing_tamsin_court_laundry.txt
+
+>   (best distance 0.327, cutoff 0.6)
+  (searched as: How much does it cost to do laundry in Aldridge Hall, Innisfree Hall, Old Brewhouse, Tamsin Court, and Fenwick Court?)
+
+Based on the provided documents:
+* **Aldridge Hall:** $1.75 wash and $1.50 dry (*housing_aldridge_hall_laundry.txt*).
+* **Innisfree Hall:** $1.75 wash and $1.75 dry (*housing_innisfree_hall.txt*).
+* **Old Brewhouse:** $1.50 wash and $1.50 dry (*housing_old_brewhouse_laundry.txt* and *housing_old_brewhouse.txt*).
+* **Fenwick Court:** $2.00 wash and $1.75 dry (*housing_fenwick_court_laundry.txt*).
+
+The provided documents do not contain any information about Tamsin Court.
+
+Sources retrieved: housing_aldridge_hall_laundry.txt, housing_fenwick_court_laundry.txt, housing_innisfree_hall.txt, housing_old_brewhouse.txt, housing_old_brewhouse_laundry.txt
+
+>   (best distance 0.440, cutoff 0.6)
+  (searched as: What does it cost to use the dryer in Aldridge Hall, Innisfree Hall, Old Brewhouse, Tamsin Court, and Fenwick Court?)
+
+Based on the provided documents:
+* **Innisfree Hall:** The dryer costs $1.75 (housing_innisfree_hall.txt).
+* **Old Brewhouse:** The dryer costs $1.50 (housing_old_brewhouse.txt).
+* **Fenwick Court:** The dryer costs $1.75 (housing_fenwick_court_laundry.txt).
+* **Tamsin Court:** Laundry costs are in-unit washer-dryer, and a specific dollar cost for the dryer is not listed (housing_tamsin_court_laundry.txt and housing_tamsin_court.txt).
+
+I do not have enough information regarding Aldridge Hall as it is not mentioned in the documents.
+
+Sources retrieved: housing_fenwick_court_laundry.txt, housing_innisfree_hall.txt, housing_old_brewhouse.txt, housing_tamsin_court.txt, housing_tamsin_court_laundry.txt
+
+>   (best distance 0.713, cutoff 0.6)
+
+I don't have enough information about that.
+
+> 6 model calls this session, 3038 tokens (2523 in, 515 out)
+

@@ -1,0 +1,31 @@
+$ AI201_CACHE=0 AI201_MEMORY=1 python app.py --corpus campus_life ask
+# stdin:
+How does the printing quota work?
+How much does it cost?
+What happens if I run out?
+Where is the gym?
+
+
+# exit code: 1
+
+Ask a question, or press Enter on an empty line to quit.
+Memory is on: follow-up questions can refer to earlier ones.
+
+>   (best distance 0.482, cutoff 0.6)
+
+Every student receives $30 of printing per semester (roughly 600 black-and-white pages), which does not roll over. Colour printing costs eight times as much per page. 
+
+Source: admin_printing_quota.txt
+
+Sources retrieved: admin_printing_quota.txt, admin_wifi_and_accounts.txt, course_cs_340_workload.txt, housing_fenwick_court_noise.txt, money_textbooks.txt
+
+> 5 model calls this session, 562 tokens (512 in, 50 out)
+
+  [rate limit] service pushed back. Retrying in 1s (attempt 1 of 4).
+  [rate limit] service pushed back. Retrying in 2s (attempt 2 of 4).
+  [rate limit] service pushed back. Retrying in 4s (attempt 3 of 4).
+  [rate limit] service pushed back. Retrying in 8s (attempt 4 of 4).
+
+RuntimeError: Still rate limited after 4 attempts. Wait a minute and try again — your key is fine.
+Last error: 429 RESOURCE_EXHAUSTED. {'error': {'code': 429, 'message': 'You exceeded your current quota, please check your plan and billing details. For more information on this error, head to: https://aistudio.google.com/docs/rate-limits. To monitor your current usage, head to: https://ai.dev/rate-limit. \n* Quota exceeded for metric: generativelanguage.googleapis.com/generate_content_free_tier_requests, limit: 15, model: gemini-3.5-flash-lite, description: Generate content requests per minute limit exceeded on Free Tier. See https://aistudio.google.com/docs/rate-limits.\nPlease retry in 59.897883215s.', 'status': 'RESOURCE_EXHAUSTED', 'details': [{'@type': 'type.googleapis.com/google.rpc.Help', 'links': [{'description': 'Learn more about Gemini API quotas', 'url': 'https://aistudio.google.com/docs/rate-limits'}]}, {'@type': 'type.googleapis.com/google.rpc.QuotaFailure', 'violations': [{'description': 'Generate content requests per minute limit exceeded on Free Tier. See https://aistudio.google.com/docs/rate-limits.', 'quotaMetric': 'generativelanguage.googleapis.com/generate_content_free_tier_requests', 'quotaId': 'GenerateRequestsPerMinutePerProjectPerModel-FreeTier', 'quotaDimensions': {'model': 'gemini-3.5-flash-lite', 'location': 'global'}, 'quotaValue': '15'}]}, {'@type': 'type.googleapis.com/google.rpc.RetryInfo', 'retryDelay': '59s'}]}}
+

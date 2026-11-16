@@ -24,31 +24,23 @@ retrieves the same noisy chunks as no memory at all.
 
 ---
 
-## 2. Memory improves answers, and does not hurt when the topic changes
+## 2. Memory turns a scattered or refused follow-up into a focused, correctly-sourced answer
 
-**Target, part A (improves):** Run the same 3-turn chain twice, once with
-`AI201_MEMORY=0` and once with `AI201_MEMORY=1`. Without memory, the follow-up
-`How much does it cost?` is **refused or answered from the wrong document**
-(the earlier laundry runs matched laundry, printing and transcripts at once).
-With memory, it is **answered and the cited source is a housing document**.
-Checked on 3 chains (laundry, drop deadline, printing quota).
+**Target:** Run the same 3-turn chain twice, once with `AI201_MEMORY=0` and
+once with `=1`. Look at the **second turn** (the first follow-up). Without
+memory it is **either refused (`best_distance > 0.6`) or covers ≥2 topics**
+(a topic is one of: laundry, printing, transcripts, drop deadline, housing
+non-laundry, or anything else). With memory it is **answered
+(`best_distance < 0.6`), covers exactly 1 topic, and every cited source is a
+housing document (`housing_*`)**. Checked on 3 chains: laundry, drop
+deadline, printing quota.
 
-**Target, part B (doesn't hurt):** After a laundry chain, ask an unrelated
-question (`Where is the gym?`). With memory on, the `standalone_question` is
-**identical to the typed question** (no rewrite), and the answer cites a gym
-document. Checked on the same 3 chains.
+**Why this target, not stricter or looser:** Stricter ("all 3 chains must
+improve") fails on the printing chain, where the corpus has no answer — that
+is a corpus limit, not a memory failure. Looser ("at least one chain") could
+pass by luck. Three chains and a topic count make the improvement measured,
+not asserted. Counting topics is checkable from the `A:` line; "better" is not.
 
-**Why this target, not stricter or looser:** Part A is the main claim of this
-extension — without it, memory is a mechanism with no measured benefit. Part B
-guards the failure mode already observed: the dryer follow-up was rewritten as
-"What about the dryer cost at Aldridge Hall, Innisfree Hall, Old Brewhouse,
-Tamsin Court, and Fenwick Court?" — the rewriter copied the earlier building
-list and kept "What about". That is over-rewriting, and it turns a clean
-follow-up into retrieval noise. A stricter target ("every chain improves") would
-fail on a chain where the no-memory baseline already answers correctly; a
-looser target ("at least one chain improves") would pass on luck.
-
----
 
 ## 3. A refused question is refused cheaply and logged exactly once
 

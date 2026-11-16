@@ -1,0 +1,42 @@
+$ AI201_CACHE=0 AI201_MEMORY=0 python app.py --corpus campus_life ask
+# stdin:
+Where can I do laundry?
+How much does it cost?
+What about the dryer?
+
+
+# exit code: 0
+
+Ask a question, or press Enter on an empty line to quit.
+
+>   (best distance 0.352, cutoff 0.6)
+
+You can do laundry in the following locations, according to their respective documents:
+- Aldridge Hall (*housing_aldridge_hall_laundry.txt*)
+- Innisfree Hall (*housing_innisfree_hall_laundry.txt*)
+- Old Brewhouse (*housing_old_brewhouse_laundry.txt*)
+- Tamsin Court (*housing_tamsin_court_laundry.txt*)
+- Fenwick Court (*housing_fenwick_court_laundry.txt*)
+
+Sources retrieved: housing_aldridge_hall_laundry.txt, housing_fenwick_court_laundry.txt, housing_innisfree_hall_laundry.txt, housing_old_brewhouse_laundry.txt, housing_tamsin_court_laundry.txt
+
+>   (best distance 0.582, cutoff 0.6)
+
+Based on the provided documents, costs depend on the specific service or residence:
+
+* **Laundry:** Costs $1.75 to wash and $1.75 to dry at Innisfree Hall (*housing_innisfree_hall.txt*), $1.50 to wash and $1.25 to dry at Morrow House (*housing_morrow_house.txt*), and $2.00 to wash and $1.75 to dry at Calder Annexe (*housing_calder_annexe.txt*).
+* **Printing:** Every student gets $30 per semester; colour costs eight times as much per page as black-and-white (*admin_printing_quota.txt*).
+* **Transcripts:** Official transcripts cost $8, while unofficial ones are free (*admin_transcript_requests.txt*).
+
+Sources retrieved: admin_printing_quota.txt, admin_transcript_requests.txt, housing_calder_annexe.txt, housing_innisfree_hall.txt, housing_morrow_house.txt
+
+>   (best distance 0.560, cutoff 0.6)
+
+Based on housing_tamsin_court_laundry.txt, there are six dryers for the building, which is the wrong ratio compared to the eight washers, causing the dryers to back up on Sunday evenings. 
+
+Source: housing_tamsin_court_laundry.txt
+
+Sources retrieved: housing_calder_annexe.txt, housing_innisfree_hall.txt, housing_morrow_house.txt, housing_tamsin_court.txt, housing_tamsin_court_laundry.txt
+
+> 3 model calls this session, 2035 tokens (1686 in, 349 out)
+

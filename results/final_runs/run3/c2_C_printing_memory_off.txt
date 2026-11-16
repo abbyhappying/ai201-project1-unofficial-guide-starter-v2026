@@ -1,0 +1,31 @@
+$ AI201_CACHE=0 AI201_MEMORY=0 python app.py --corpus campus_life ask
+# stdin:
+How does the printing quota work?
+How much does it cost?
+What happens if I run out?
+
+
+# exit code: 0
+
+Ask a question, or press Enter on an empty line to quit.
+
+>   (best distance 0.482, cutoff 0.6)
+
+Every student receives $30 of printing per semester (roughly 600 black-and-white pages), which does not roll over. Colour printing costs eight times as much per page. 
+
+Source: admin_printing_quota.txt
+
+Sources retrieved: admin_printing_quota.txt, admin_wifi_and_accounts.txt, course_cs_340_workload.txt, housing_fenwick_court_noise.txt, money_textbooks.txt
+
+>   (best distance 0.582, cutoff 0.6)
+
+You have not specified what service or item you are asking about (such as laundry, printing, or transcript requests), so I do not have enough information to answer how much it costs based on the provided documents.
+
+Sources retrieved: admin_printing_quota.txt, admin_transcript_requests.txt, housing_calder_annexe.txt, housing_innisfree_hall.txt, housing_morrow_house.txt
+
+>   (best distance 0.820, cutoff 0.6)
+
+I don't have enough information about that.
+
+> 2 model calls this session, 1107 tokens (1015 in, 92 out)
+

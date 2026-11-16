@@ -1,0 +1,19 @@
+$ AI201_CACHE=0 AI201_MEMORY=1 python app.py --corpus campus_life chunks --from-doc admin_add_drop_deadline
+# exit code: 0
+
+91 chunks total. Showing all 1 from admin_add_drop_deadline.txt.
+
+Paste these into your README under Sample Chunks. The rubric asks
+for the source file and the function that produced them — both are
+printed for you below.
+
+======================================================================
+Chunk 1  |  source: admin_add_drop_deadline.txt#0  |  produced by: chunker.py::split_documents
+======================================================================
+On the add/drop deadline
+
+You can add a course through the end of the second week. Dropping is a longer window — through the end of week six — but a drop after week two shows as a W on your transcript. Nothing anywhere on the registrar's site says this plainly, and students find out from each other.
+
+For each one, ask: could someone answer a question using only this,
+without reading what came before or after?
+

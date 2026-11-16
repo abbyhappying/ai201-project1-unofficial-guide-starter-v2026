@@ -1,0 +1,29 @@
+$ AI201_CACHE=0 AI201_MEMORY=0 python app.py --corpus campus_life ask
+# stdin:
+What's the class drop deadline?
+What about adding one?
+Does it show on my transcript?
+
+
+# exit code: 0
+
+Ask a question, or press Enter on an empty line to quit.
+
+>   (best distance 0.316, cutoff 0.6)
+
+Based on the documents provided, dropping a course can be done through the end of week six. (Source: `admin_add_drop_deadline.txt` and `admin_withdrawal_deadline.txt`)
+
+Sources retrieved: admin_add_drop_deadline.txt, admin_withdrawal_deadline.txt, course_econ_101_workload.txt, course_stat_150.txt, course_stat_150_workload.txt
+
+>   (best distance 0.814, cutoff 0.6)
+
+I don't have enough information about that.
+
+>   (best distance 0.453, cutoff 0.6)
+
+Yes, a course drop after week two shows as a W on your transcript (admin_add_drop_deadline.txt). Additionally, a withdrawal through week ten also puts a W on your transcript (admin_withdrawal_deadline.txt).
+
+Sources retrieved: admin_add_drop_deadline.txt, admin_campus_jobs_and_financial_aid.txt, admin_grade_appeals.txt, admin_transcript_requests.txt, admin_withdrawal_deadline.txt
+
+> 2 model calls this session, 1132 tokens (1040 in, 92 out)
+

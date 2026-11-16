@@ -698,3 +698,101 @@ two-turn test (not one of the ten above), the follow-up used 1036 tokens:
 275 for the rewrite and 761 for the answer. So memory roughly doubles the
 quota use of every follow-up. An answer served from the response cache costs
 0 calls and 0 tokens, and is counted in `usage.cache_hits`.
+
+## Final project-Run Log
+
+Every criterion in `criteria.md` was run three separate times on `campus_life`
+with `AI201_CACHE=0`, so every answer is a real model call. The raw CLI output
+and the exact log records from each step are saved in
+`results/final_runs/run1/`, `run2/` and `run3/`: one `.txt` file (the command,
+its input, exit code and full output) and one `.records.jsonl` file per step.
+`results/final_runs/summary.json` has the per-run numbers. All 63 steps exited
+with code 0.
+
+| Criterion | Target | Run 1 | Run 2 | Run 3 | Verdict |
+|---|---|---|---|---|---|
+| 1. Follow-ups rewritten to name the subject | both follow-ups (2/2) | 2/2 | 2/2 | 2/2 | **MET** |
+| 2. Memory improves answers, doesn't hurt on topic change | A: follow-up fixed by memory on 3 chains; B: off-topic question unchanged **and** cites a gym doc | A 3/3 · B unchanged 3/3, gym doc 0/3 | A 3/3 · B unchanged 3/3, gym doc 0/3 | A 3/3 · B unchanged 3/3, gym doc 0/3 | **PARTLY MET** |
+| 3. Refusals cheap and logged once | 5/5 refused, faster than the answered run, 1 record each, ≤1 model call | 5/5 | 5/5 | 5/5 | **MET** |
+| 4. Cost measured and reproducible | 10/10 non-zero tokens, cost formula holds, token spread < 10% | 10/10, spread 1.6% | 10/10, spread 2.3% | 10/10, spread 4.3% | **MET** |
+| 5. Variant index auditable | log shows `variant: v2`, `produced_by` names a real chunker function | v2, `split_documents` | v2, `split_documents` | v2, `split_documents` | **MET** (narrowly) |
+
+### What each run showed
+
+**1. Rewrite names the subject.** The rewrites were nearly identical in all
+three runs:
+
+- Turn 2, `How much does it cost?` → `How much does it cost to do laundry in Aldridge Hall, Innisfree Hall, Old Brewhouse, Tamsin Court, and Fenwick Court?`
+- Turn 3, `What about the dryer?` → `How much does it cost to use the dryer in Aldridge Hall, …` (run 1) / `What does it cost to use the dryer in …` (runs 2, 3)
+
+Every rewrite differs from what was typed and names laundry or the dryer.
+(My scoring script first marked these 0/2 because it rejected any "it" at all,
+including the "does it cost" construction. I checked all six by hand.)
+The over-rewriting noted in `criteria.md` is still there: the rewriter copies
+the five-building list from the previous answer into every follow-up.
+
+**2A. Memory improves the follow-up.** Turn 2 of each chain, memory off vs. on:
+
+| Chain | Memory off | Memory on |
+|---|---|---|
+| Laundry: `How much does it cost?` | answered, but untargeted: lists laundry, printing and transcript costs at once (best distance 0.5819, just under the 0.6 cutoff) | laundry prices per building, cites `housing_*_laundry.txt` |
+| Drop deadline: `What about adding one?` | **refused** | "through the end of the second week", cites `admin_add_drop_deadline.txt` |
+| Printing: `How much does it cost?` | the same untargeted list as the laundry chain (same retrieval, distance 0.5819), or "you have not specified what 'it' refers to" (run 3) | printing cost, cites `admin_printing_quota.txt` |
+
+Without memory, `How much does it cost?` retrieves the same chunks whatever the
+conversation was about. That is the failure this criterion targets, in all
+three chains and all three runs. (My scoring script first gave runs 1 and 2
+2/3, because the untargeted list happens to mention the printing file. Reading
+the answers shows it isn't a targeted answer.)
+
+**2B. Topic change.** After each chain, `Where is the gym?` was passed through
+unchanged (3/3 every run), so memory did not drag the old topic into a new
+question. But it was refused every time, because **campus_life has no gym
+document**. The "cites a gym document" half of the target can't be met with
+this corpus, which is why the verdict is *partly met*. The target should name
+a topic the corpus covers (for example `Where is the health center?`).
+
+**3. Refusals.** In one session, after the warm-up question
+`Where can I do laundry?`:
+
+| | Run 1 | Run 2 | Run 3 |
+|---|---|---|---|
+| Warm-up (answered) | 2650 ms | 2430 ms | 2500 ms |
+| 5 refusals | 500–812 ms | 468–875 ms | 536–1186 ms |
+| Records per question | 1 each | 1 each | 1 each |
+| `model_calls` per refusal | 1 (the rewrite, since there was history) | 1 | 1 |
+
+Every answer was exactly `I don't have enough information about that.` One
+caveat: with only one answered run per session, "the median answered run" is a
+single number, and it includes loading the embedding model.
+
+**4. Cost.** Ten runs per pass of `Where can I do laundry?`, memory off:
+
+| | Run 1 | Run 2 | Run 3 |
+|---|---|---|---|
+| Mean tokens (prompt / output) | 683.0 (570 / 113.0) | 682.4 (570 / 112.4) | 680.3 (570 / 110.3) |
+| Token range | 680–691 | 675–691 | 662–691 |
+| Spread (max − min) / mean | 1.6% | 2.3% | 4.3% |
+| Mean time | 2663 ms | 3614 ms | 3247 ms |
+| `est_cost_usd` = tokens × logged prices | holds on 10/10 ($0, free tier) | 10/10 | 10/10 |
+
+**5. Variant.** `python app.py --variant v2 index` built the index, and an ask
+against it logged `settings.variant: "v2"`. The chunk headers for
+`housing_aldridge_hall_laundry` and `admin_add_drop_deadline` both name
+`chunker.py::split_documents`. This passes, but narrowly: both documents are a
+single chunk, and `fallback_split` was never exercised. The command in
+`criteria.md` also needs correcting: `--variant` goes **before** the
+subcommand (`python app.py --variant v2 index`), and `chunks` re-chunks the
+files rather than reading an index, so it has no `--variant` option.
+
+### Failed run
+
+The first attempt at run 1 was aborted. The printing chain hit Gemini's
+free-tier limit of **15 requests per minute**
+(`429 RESOURCE_EXHAUSTED … GenerateRequestsPerMinutePerProjectPerModel-FreeTier`).
+The app's limiter is set to 30 per minute and counts only within one process,
+and its retries back off for about 15 s in total, while Google asked for 60 s.
+The follow-up was logged as `status: "error"` with the full message. The
+output is kept in `results/final_runs/aborted_rate_limited/`. The three runs
+above were then re-run from scratch, paced at about 10 calls per minute, and
+none of them failed.

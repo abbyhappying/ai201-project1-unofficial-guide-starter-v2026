@@ -1,0 +1,428 @@
+{
+  "1": {
+    "c1": {
+      "pass": 0,
+      "of": 2,
+      "rows": [
+        [
+          "How much does it cost?",
+          "How much does it cost to do laundry in Aldridge Hall, Innisfree Hall, Old Brewhouse, Tamsin Court, and Fenwick Court?",
+          false
+        ],
+        [
+          "What about the dryer?",
+          "How much does it cost to use the dryer in Aldridge Hall, Innisfree Hall, Old Brewhouse, Tamsin Court, and Fenwick Court?",
+          false
+        ]
+      ]
+    },
+    "c2": {
+      "A": [
+        [
+          "A_laundry",
+          "ok",
+          false,
+          "ok",
+          true,
+          true
+        ],
+        [
+          "B_drop",
+          "refused",
+          false,
+          "ok",
+          true,
+          true
+        ],
+        [
+          "C_printing",
+          "ok",
+          true,
+          "ok",
+          true,
+          false
+        ]
+      ],
+      "A_pass": 2,
+      "B": [
+        [
+          "A_laundry",
+          "Where is the gym?",
+          true,
+          "refused",
+          false
+        ],
+        [
+          "B_drop",
+          "Where is the gym?",
+          true,
+          "refused",
+          false
+        ],
+        [
+          "C_printing",
+          "Where is the gym?",
+          true,
+          "refused",
+          false
+        ]
+      ],
+      "B_unchanged": 3,
+      "B_gym_doc": 0
+    },
+    "c3": {
+      "pass": 5,
+      "of": 5,
+      "median_answered_ms": 2650,
+      "answered_runs": 1,
+      "rows": [
+        [
+          "What is the capital of Mongolia?",
+          1,
+          "refused",
+          1,
+          624,
+          true
+        ],
+        [
+          "How do I change the oil in a diesel engine?",
+          1,
+          "refused",
+          1,
+          500,
+          true
+        ],
+        [
+          "Who won the 1994 World Cup?",
+          1,
+          "refused",
+          1,
+          545,
+          true
+        ],
+        [
+          "What is the recommended dosage of ibuprofen for a headache?",
+          1,
+          "refused",
+          1,
+          812,
+          true
+        ],
+        [
+          "How do I write a for loop in Rust?",
+          1,
+          "refused",
+          1,
+          607,
+          true
+        ]
+      ]
+    },
+    "c4": {
+      "nonzero": 10,
+      "cost_formula_ok": true,
+      "tokens_mean": 683,
+      "tokens_min": 680,
+      "tokens_max": 691,
+      "spread_pct": 1.61,
+      "prompt_mean": 570,
+      "output_mean": 113,
+      "ms_mean": 2663.4,
+      "memory": true,
+      "pass": true
+    },
+    "c5": {
+      "variant_logged": "v2",
+      "produced_by": [
+        "chunker.py::split_documents"
+      ],
+      "chunks_seen": 2,
+      "index_exit0": true,
+      "pass": true
+    }
+  },
+  "2": {
+    "c1": {
+      "pass": 0,
+      "of": 2,
+      "rows": [
+        [
+          "How much does it cost?",
+          "How much does it cost to do laundry in Aldridge Hall, Innisfree Hall, Old Brewhouse, Tamsin Court, and Fenwick Court?",
+          false
+        ],
+        [
+          "What about the dryer?",
+          "What does it cost to use the dryer in Aldridge Hall, Innisfree Hall, Old Brewhouse, Tamsin Court, and Fenwick Court?",
+          false
+        ]
+      ]
+    },
+    "c2": {
+      "A": [
+        [
+          "A_laundry",
+          "ok",
+          false,
+          "ok",
+          true,
+          true
+        ],
+        [
+          "B_drop",
+          "refused",
+          false,
+          "ok",
+          true,
+          true
+        ],
+        [
+          "C_printing",
+          "ok",
+          true,
+          "ok",
+          true,
+          false
+        ]
+      ],
+      "A_pass": 2,
+      "B": [
+        [
+          "A_laundry",
+          "Where is the gym?",
+          true,
+          "refused",
+          false
+        ],
+        [
+          "B_drop",
+          "Where is the gym?",
+          true,
+          "refused",
+          false
+        ],
+        [
+          "C_printing",
+          "Where is the gym?",
+          true,
+          "refused",
+          false
+        ]
+      ],
+      "B_unchanged": 3,
+      "B_gym_doc": 0
+    },
+    "c3": {
+      "pass": 5,
+      "of": 5,
+      "median_answered_ms": 2430,
+      "answered_runs": 1,
+      "rows": [
+        [
+          "What is the capital of Mongolia?",
+          1,
+          "refused",
+          1,
+          766,
+          true
+        ],
+        [
+          "How do I change the oil in a diesel engine?",
+          1,
+          "refused",
+          1,
+          610,
+          true
+        ],
+        [
+          "Who won the 1994 World Cup?",
+          1,
+          "refused",
+          1,
+          468,
+          true
+        ],
+        [
+          "What is the recommended dosage of ibuprofen for a headache?",
+          1,
+          "refused",
+          1,
+          536,
+          true
+        ],
+        [
+          "How do I write a for loop in Rust?",
+          1,
+          "refused",
+          1,
+          875,
+          true
+        ]
+      ]
+    },
+    "c4": {
+      "nonzero": 10,
+      "cost_formula_ok": true,
+      "tokens_mean": 682.4,
+      "tokens_min": 675,
+      "tokens_max": 691,
+      "spread_pct": 2.34,
+      "prompt_mean": 570,
+      "output_mean": 112.4,
+      "ms_mean": 3614.2,
+      "memory": true,
+      "pass": true
+    },
+    "c5": {
+      "variant_logged": "v2",
+      "produced_by": [
+        "chunker.py::split_documents"
+      ],
+      "chunks_seen": 2,
+      "index_exit0": true,
+      "pass": true
+    }
+  },
+  "3": {
+    "c1": {
+      "pass": 0,
+      "of": 2,
+      "rows": [
+        [
+          "How much does it cost?",
+          "How much does it cost to do laundry in Aldridge Hall, Innisfree Hall, Old Brewhouse, Tamsin Court, and Fenwick Court?",
+          false
+        ],
+        [
+          "What about the dryer?",
+          "What does it cost to use the dryer in Aldridge Hall, Innisfree Hall, Old Brewhouse, Tamsin Court, and Fenwick Court?",
+          false
+        ]
+      ]
+    },
+    "c2": {
+      "A": [
+        [
+          "A_laundry",
+          "ok",
+          false,
+          "ok",
+          true,
+          true
+        ],
+        [
+          "B_drop",
+          "refused",
+          false,
+          "ok",
+          true,
+          true
+        ],
+        [
+          "C_printing",
+          "ok",
+          false,
+          "ok",
+          true,
+          true
+        ]
+      ],
+      "A_pass": 3,
+      "B": [
+        [
+          "A_laundry",
+          "Where is the gym?",
+          true,
+          "refused",
+          false
+        ],
+        [
+          "B_drop",
+          "Where is the gym?",
+          true,
+          "refused",
+          false
+        ],
+        [
+          "C_printing",
+          "Where is the gym?",
+          true,
+          "refused",
+          false
+        ]
+      ],
+      "B_unchanged": 3,
+      "B_gym_doc": 0
+    },
+    "c3": {
+      "pass": 5,
+      "of": 5,
+      "median_answered_ms": 2500,
+      "answered_runs": 1,
+      "rows": [
+        [
+          "What is the capital of Mongolia?",
+          1,
+          "refused",
+          1,
+          748,
+          true
+        ],
+        [
+          "How do I change the oil in a diesel engine?",
+          1,
+          "refused",
+          1,
+          536,
+          true
+        ],
+        [
+          "Who won the 1994 World Cup?",
+          1,
+          "refused",
+          1,
+          590,
+          true
+        ],
+        [
+          "What is the recommended dosage of ibuprofen for a headache?",
+          1,
+          "refused",
+          1,
+          606,
+          true
+        ],
+        [
+          "How do I write a for loop in Rust?",
+          1,
+          "refused",
+          1,
+          1186,
+          true
+        ]
+      ]
+    },
+    "c4": {
+      "nonzero": 10,
+      "cost_formula_ok": true,
+      "tokens_mean": 680.3,
+      "tokens_min": 662,
+      "tokens_max": 691,
+      "spread_pct": 4.26,
+      "prompt_mean": 570,
+      "output_mean": 110.3,
+      "ms_mean": 3246.7,
+      "memory": true,
+      "pass": true
+    },
+    "c5": {
+      "variant_logged": "v2",
+      "produced_by": [
+        "chunker.py::split_documents"
+      ],
+      "chunks_seen": 2,
+      "index_exit0": true,
+      "pass": true
+    }
+  }
+}
