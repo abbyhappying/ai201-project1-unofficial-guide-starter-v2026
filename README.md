@@ -712,10 +712,25 @@ with code 0.
 | Criterion | Target | Run 1 | Run 2 | Run 3 | Verdict |
 |---|---|---|---|---|---|
 | 1. Follow-ups rewritten to name the subject | both follow-ups (2/2) | 2/2 | 2/2 | 2/2 | **MET** |
-| 2. Memory improves answers, doesn't hurt on topic change | A: follow-up fixed by memory on 3 chains; B: off-topic question unchanged **and** cites a gym doc | A 3/3 · B unchanged 3/3, gym doc 0/3 | A 3/3 · B unchanged 3/3, gym doc 0/3 | A 3/3 · B unchanged 3/3, gym doc 0/3 | **PARTLY MET** |
-| 3. Refusals cheap and logged once | 5/5 refused, faster than the answered run, 1 record each, ≤1 model call | 5/5 | 5/5 | 5/5 | **MET** |
+| 2. Memory turns a scattered or refused follow-up into a focused, correctly-sourced answer | 3/3 chains: turn 2 without memory refused or ≥2 topics; with memory answered, 1 topic, every cited source `housing_*` | 1/3 | 1/3 | 1/3 | **MISSED** |
+| 3. Refusals cheap and logged once | 5/5 `OUT_OF_SCOPE` refused with the exact string, under the session's median answered run, 1 record each, `model_calls` 0 or 1 | 5/5 | 5/5 | 5/5 | **MET** |
 | 4. Cost measured and reproducible | 10/10 non-zero tokens, cost formula holds, token spread < 10% | 10/10, spread 1.6% | 10/10, spread 2.3% | 10/10, spread 4.3% | **MET** |
-| 5. Variant index auditable | log shows `variant: v2`, `produced_by` names a real chunker function | v2, `split_documents` | v2, `split_documents` | v2, `split_documents` | **MET** (narrowly) |
+| 5. Variant index auditable | log shows `variant: v2`, `produced_by` names `split_documents` or `fallback_split` | v2, `split_documents` | v2, `split_documents` | v2, `split_documents` | **MET** |
+
+**Why criterion 2 is missed.** Only the laundry chain meets the target in each
+run. The drop-deadline chain (memory on) answers correctly from
+`admin_add_drop_deadline.txt`, and the printing chain from
+`admin_printing_quota.txt`. Both answers are focused and correct, but the target
+requires every cited source to be `housing_*`, so both fail. In run 3 the
+printing chain also fails on the memory-off side: it wasn't refused (best
+distance 0.5819) and named no topic ("you have not specified what 'it' refers
+to"). The memory-on answers improved in all three chains. What failed is the
+target's housing-only source rule, which only fits the laundry chain.
+
+**Criterion 5 note.** The commands in `criteria.md` don't run as written:
+`--variant` must come before the subcommand, and `chunks` has no `--variant`
+option. The run used `python app.py --variant v2 index` and
+`python app.py --variant v2 ask ...`.
 
 ### What each run showed
 
@@ -731,26 +746,29 @@ including the "does it cost" construction. I checked all six by hand.)
 The over-rewriting noted in `criteria.md` is still there: the rewriter copies
 the five-building list from the previous answer into every follow-up.
 
-**2A. Memory improves the follow-up.** Turn 2 of each chain, memory off vs. on:
+**2. Memory and a focused, correctly-sourced answer (MISSED, 1/3 chains every
+run).** Turn 2 of each chain, memory off vs. on, scored against the target:
+without memory, refused or ≥2 topics; with memory, answered, 1 topic, every
+cited source `housing_*`.
 
-| Chain | Memory off | Memory on |
-|---|---|---|
-| Laundry: `How much does it cost?` | answered, but untargeted: lists laundry, printing and transcript costs at once (best distance 0.5819, just under the 0.6 cutoff) | laundry prices per building, cites `housing_*_laundry.txt` |
-| Drop deadline: `What about adding one?` | **refused** | "through the end of the second week", cites `admin_add_drop_deadline.txt` |
-| Printing: `How much does it cost?` | the same untargeted list as the laundry chain (same retrieval, distance 0.5819), or "you have not specified what 'it' refers to" (run 3) | printing cost, cites `admin_printing_quota.txt` |
+| Chain | Memory off | Memory on | Chain passes? |
+|---|---|---|---|
+| Laundry: `How much does it cost?` | answered at 0.5819 (just under the 0.6 cutoff), but covers laundry, printing and transcripts; cites `admin_printing_quota.txt`, `admin_transcript_requests.txt` and three housing files: **≥2 topics ✓** | laundry prices only, best distance 0.3272; cites only `housing_*` files: **✓** | **yes**, all 3 runs |
+| Drop deadline: `What about adding one?` | **refused** (best distance 0.814): **✓** | "You can add a course through the end of the second week", cites `admin_add_drop_deadline.txt`: focused and correct, but **not `housing_*` ✗** | **no**, all 3 runs |
+| Printing: `How much does it cost?` | runs 1–2: the same ≥2-topic list as the laundry chain, **✓**; run 3: answered at 0.5819 with "you have not specified what 'it' refers to", neither refused nor ≥2 topics, **✗** | printing cost, best distance 0.2547, cites `admin_printing_quota.txt`: focused and correct, but **not `housing_*` ✗** | **no**, all 3 runs |
 
-Without memory, `How much does it cost?` retrieves the same chunks whatever the
-conversation was about. That is the failure this criterion targets, in all
-three chains and all three runs. (My scoring script first gave runs 1 and 2
-2/3, because the untargeted list happens to mention the printing file. Reading
-the answers shows it isn't a targeted answer.)
+Memory improved turn 2 in all three chains: each memory-on answer is focused
+and cites the right document. The target still fails on 2 of 3 chains,
+because it requires `housing_*` sources, which only the laundry chain can
+have. The drop-deadline and printing answers live in `admin_*` files. Without
+memory, `How much does it cost?` retrieves the same chunks whatever the
+conversation was about (distance 0.5819 in both the laundry and printing
+chains), which is the scattered answer this criterion is meant to catch.
 
-**2B. Topic change.** After each chain, `Where is the gym?` was passed through
-unchanged (3/3 every run), so memory did not drag the old topic into a new
-question. But it was refused every time, because **campus_life has no gym
-document**. The "cites a gym document" half of the target can't be met with
-this corpus, which is why the verdict is *partly met*. The target should name
-a topic the corpus covers (for example `Where is the health center?`).
+The `Where is the gym?` topic-change check from an earlier version of this
+criterion is no longer part of the target. For the record: it was passed
+through unchanged (not rewritten) in 3/3 chains every run, and refused every
+time, because campus_life has no gym document.
 
 **3. Refusals.** In one session, after the warm-up question
 `Where can I do laundry?`:
