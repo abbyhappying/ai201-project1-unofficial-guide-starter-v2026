@@ -1058,3 +1058,74 @@ target needs 3/3.
   lists all five retrieved chunks, not the files the answer cites, and checked
   that way every chain fails in every run (0/3). These scores use the files
   named in the answer, which is what "every cited source" says.
+
+### What It Costs
+
+**Measured per-run cost:** $0.00 (tokens: ~681 per run)
+
+**How I measured it:** Ten back-to-back runs of `Where can I do laundry?` with
+`AI201_CACHE=0` and `AI201_MEMORY=0`, repeated in three batches. Token counts
+are read from Gemini's `usage_metadata` (stored in `logs/requests.jsonl` by
+`request_log.py`). The average was 681 tokens per run (570 input, 111 output).
+
+**What it would cost for 100 people a day:**
+The arithmetic: 100 people × 1 run/day × 681 tokens = 68,100 tokens/day.
+Based on our current free tier (0 USD/1M tokens): 68,100 / 1,000,000 × $0.00 =
+**$0.00 per day**.
+If we were on a paid tier at $0.10 per million input tokens and $0.40 per
+million output tokens:
+- Input: 57,000 tokens / 1,000,000 × $0.10 = $0.0057
+- Output: 11,100 tokens / 1,000,000 × $0.40 = $0.0044
+**Total cost for 100 users:** ~$0.01 per day (1 cent).
+
+
+### What's Still Broken
+
+**Criterion 2 (Memory turns a scattered or refused follow-up into a focused,
+correctly-sourced answer) is still MISSED.**
+
+- **What I'd do:** I need to change the target *again* to measure what
+  "correctly-sourced" actually means. My first target ("all sources are
+  `housing_*`") failed the drop and printing chains, which correctly use
+  `admin_*` files. My second target ("source matches the chain's topic") fixed
+  drop and printing, but failed the laundry chain (2/3), because the model
+  correctly cited `housing_innisfree_hall.txt` (which contains laundry prices)
+  instead of the strictly named `*_laundry*` file. I would revise the target
+  to: *"the cited source must appear in the top-5 retrieved chunks for that
+  topic, and the answer must not mix topics."*
+- **Why I stopped:** The revision traded one wrong source rule for another,
+  and rewriting the target a third time after seeing the test results starts
+  to look like moving the goalposts. The system is behaving correctly (it
+  finds and cites the documents that actually contain the answers); the
+  failure is in my ability to write a strict, measurable source-matching rule.
+
+
+### What I'd Do Next
+
+If I had another unit, the one thing I would do first is **fix the
+over-rewriting in `rewrite_question`**. The current rewriter copies the
+previous answer's entire building list into every follow-up, which bloats the
+token count and adds noise to the retrieval. I would add a post-processing step
+to trim the rewrite down to the subject and verb (or prompt the model to "keep
+the rewrite under 10 words"), because a shorter, cleaner query is the root
+cause of both the latency and the cost.
+
+## Capstone
+
+### How I Used AI
+
+I used AI heavily as a pair-programmer and code reviewer, particularly for
+debugging multi-turn memory logic, fixing parameter parsing errors (like the
+`--variant` flag position), and structuring the JSONL run log.
+
+**What came back and what I changed:**
+
+1. **The `trim_history` truncation logic.** The AI suggested dropping the
+   oldest turn (`pop(0)`) until the character limit was met. **What I
+   changed:** I realized this could drop the newest turn if a single answer
+   was long, leaving the rewriter with no context. I modified it to guarantee
+   the newest turn is kept, and truncate its `answer` instead.
+2. **Refining Criterion 2.** The AI helped me draft the initial target
+   ("all sources must be `housing_*`"). When drop and printing failed, the AI
+   explained the target was logically broken. **What I changed:** I rewrote it
+   to "source matches topic" and re-ran the tests.
